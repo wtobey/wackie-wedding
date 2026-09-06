@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <rect width="160" height="160" fill="#824a36"/>
+  <defs>
+    <path id="petal" d="M0-10C-6-16-5-28-1-29 5-30 5-16 0-10Z" fill="#f5e8ce"/>
+    <g id="flower">
+      <use href="#petal"/><use href="#petal" transform="rotate(31)"/><use href="#petal" transform="rotate(60)"/><use href="#petal" transform="rotate(91)"/><use href="#petal" transform="rotate(119)"/><use href="#petal" transform="rotate(150)"/><use href="#petal" transform="rotate(181)"/><use href="#petal" transform="rotate(211)"/><use href="#petal" transform="rotate(240)"/><use href="#petal" transform="rotate(271)"/><use href="#petal" transform="rotate(301)"/><use href="#petal" transform="rotate(330)"/>
+      <path d="M-3-3Q2-6 4-1T0 4Q-5 5-3-3Z" fill="#e2b36d"/>
+    </g>
+    <g id="sprig" fill="#f5e8ce">
+      <path d="M0 0Q-11-15-8-20 2-18 0 0M0 0Q9-17 15-17 16-6 0 0M7 13Q-3 1-1-7 9-4 7 13M7 13Q18-1 22 0 24 10 7 13"/>
+    </g>
+  </defs>
+  <use href="#flower" transform="translate(40 40) rotate(-7)"/>
+  <use href="#flower" transform="translate(120 120) rotate(9)"/>
+  <use href="#sprig" transform="translate(88 76) rotate(9)"/>
+  <use href="#sprig" transform="translate(8 156) rotate(9)"/>
+  <use href="#sprig" transform="translate(156 8) rotate(180)"/>
+  <use href="#sprig" transform="translate(76 88) rotate(180)"/>
+  <g fill="#e2b36d"><path d="m117 33 4-8 3 9-4 7ZM36 114l4-8 3 9-4 7Z"/></g>
+</svg>

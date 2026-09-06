@@ -1,0 +1,33 @@
+:root {
+  --background: #faf9f7;
+  --peach: #e8a87c;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--background);
+  color: #213547;
+  /* next/font exposes Fraunces only through this variable (the family name is hashed). */
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

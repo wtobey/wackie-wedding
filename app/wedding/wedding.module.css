@@ -1,0 +1,350 @@
+.site {
+  --font-wedding: var(--font-fraunces), Georgia, serif;
+  --paper: #faf7f2;
+  --ink: #685543;
+  --muted: #8b735e;
+  --rust: #a44f35;
+  --paper-texture: url('/wedding-paper.svg');
+  --orange: #995106;
+  --peach: #D89F38;
+  --soft-peach: #FED1C4;
+  --peach-panel: #FED1C4;
+  --line: rgba(153, 81, 6, .16);
+  min-height: 100svh;
+  color: var(--ink);
+  background: var(--paper);
+  font-weight: 400;
+  font-family: var(--font-wedding);
+}
+.site button, .site input { font: inherit; }
+.gallerySite { height: 100dvh; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.gallerySite > header { width: 100%; margin: 0 auto; }
+.gallerySite > main { min-height: 0; overflow: auto; }
+.site button, .site a, .site input { -webkit-tap-highlight-color: transparent; }
+.site button { cursor: pointer; }
+.site :focus-visible { outline: 2px solid var(--orange); outline-offset: 5px; }
+.site p { line-height: 1.7; }
+.site h1, .site h2, .site h3 { font-weight: 400; line-height: 1.2; }
+.site h2 { color: var(--orange); font-size: clamp(30px, 3.8vw, 49px); letter-spacing: -.02em; }
+.site h3 { color: var(--orange); font-size: 27px; letter-spacing: -.01em; }
+.site address { font-style: normal; line-height: 1.7; }
+.addressLink { display: inline-block; color: var(--orange); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+.addressLink:hover { text-decoration-color: currentColor; }
+.site section[id] { scroll-margin-top: 32px; }
+.eyebrow { font-size: 13px; line-height: 1.6; font-weight: 400; color: var(--muted); }
+.header { max-width: 1440px; margin: auto; padding: 24px 5%; display: flex; align-items: center; justify-content: space-between; gap: 36px;  }
+.brand { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; font-size: 23px; color: var(--orange); font-weight: 400; white-space: nowrap; }
+.brandIcon { display: block; width: 48px; height: 60px; flex-shrink: 0; background: currentColor; -webkit-mask: url('/wedding-redwoods-v2.svg') center / contain no-repeat; mask: url('/wedding-redwoods-v2.svg') center / contain no-repeat; }
+.nav { display: flex; gap: clamp(16px, 2.3vw, 36px); align-items: center; }
+.nav > a { font-size: 13px; color: var(--muted); padding: 10px 0; transition: color .2s; }
+.nav > a:hover, .nav > a[aria-current] { color: var(--orange); }
+.nav .rsvpNav { font-size: 13px; font-weight: 700; color: var(--orange); border: 0; background: none; padding: 10px 0; }
+.rsvpDialog { position: fixed; margin: auto; width: min(480px, calc(100% - 40px)); max-height: calc(100dvh - 40px); padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); box-shadow: 0 16px 64px #68554324; }
+.rsvpDialog::backdrop { background: #392b224d; }
+.rsvpDialogContent { padding: 40px 28px 28px; text-align: center; }
+.rsvpDialogContent h2 { font-size: clamp(26px, 4vw, 34px); line-height: 1.25; margin-bottom: 20px; }
+.rsvpDialogContent p { font-size: 16px; }
+.rsvpDialogClose { margin-top: 28px; padding: 10px 22px; border: 1px solid var(--line); border-radius: 5px; background: var(--peach-panel); color: var(--orange); }
+.menuButton { display: none; }
+.skipLink { position: fixed; z-index: 100; top: 10px; left: 10px; padding: 12px; background: var(--paper); transform: translateY(-150%); }
+.skipLink:focus { transform: translateY(0); }
+.button { border: 1px solid rgba(216, 159, 56, .4); border-radius: 8px; background: rgba(216, 159, 56, .18); color: var(--orange); padding: 13px 23px; font: 400 14px/1.5 var(--font-wedding); display: inline-flex; align-items: center; justify-content: center; gap: 20px; transition: background .2s; }
+.button:hover { background: rgba(216, 159, 56, .3); }
+.button:disabled { opacity: .6; cursor: wait; transform: none; }
+.textLink { display: inline-flex; align-items: center; gap: 7px; font: 500 13px/1.5 var(--font-wedding); color: var(--orange); padding-block: 6px; text-decoration: none; transition: color .2s; }
+.textLink::after { content: ""; flex: 0 0 12px; width: 12px; height: 12px; background: currentColor; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 12 12 4M4 4h8v8' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+.textLink:hover { color: var(--ink); }
+.polaroid { background: var(--paper-texture), #fffaf0; padding: 10px 10px 0; border-radius: 2px; box-shadow: 0 5px 14px #623d2514, 0 1px 3px #623d2512; }
+.photoFrame { position: relative; aspect-ratio: 1 / 1; background: #e8e8e8; overflow: hidden; }
+.photoFrame img { object-fit: cover; }
+.polaroid figcaption { padding: 14px 2px 19px; font-size: 14px; font-style: italic; text-align: center; }
+.weekendSection { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 64px max(6%, calc((100vw - 1120px) / 2)); background: var(--paper-texture), var(--peach-panel); }
+.patternedWeekend { padding: 48px max(4%, calc((100vw - 1200px) / 2)); background: url('/wedding-meadow-pattern.png') center / 420px repeat, #fce5d8; background-blend-mode: multiply; }
+.weekendPaper { padding: 40px; background: var(--paper); }
+.sectionHeading { display: flex; align-items: end; justify-content: space-between; gap: 25px; margin-bottom: 40px; }
+.sectionHeading h2 { margin-top: 12px; }
+.sectionHeading > a { flex-shrink: 0; margin-bottom: 6px; }
+.events { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.event { border-top: 1px solid var(--line); padding-top: 18px; }
+.eventTop { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.eventDoodle { width: 38px; height: 38px; flex-shrink: 0; color: var(--rust); }
+.event h3 { margin: 20px 0 16px; }
+.event > p { font-size: 14px; }
+.smallNote { font: 11px/1.7 var(--font-wedding); color: var(--muted); }
+.event > .smallNote { margin-top: 20px; font-size: 11px; }
+.eventLocation { margin-top: 20px; font-weight: 600; }
+.homePlanning { padding: 90px 6%; max-width: 1250px; margin: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 90px; }
+.homePlanning h2 { margin: 15px 0 23px; }
+.homePlanning > div > p:not(.eyebrow) { max-width: 440px; font-size: 15px; }
+.planningLinks { align-self: center; }
+.planningLinks > a { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 25px 0; border-bottom: 1px solid var(--line); font-size: 24px; letter-spacing: -.01em; }
+.planningLinks small { display: block; font: 10px/1.5 var(--font-wedding); letter-spacing: .02em; color: var(--muted); margin-bottom: 10px; }
+.planningLinks a:hover { color: var(--orange); }
+.rsvpSection { text-align: center; background: var(--paper-texture), #f2dfb8; border-top: 1px solid #e2c48c; padding: 56px 24px 65px; position: relative; }
+.rsvpSection h2 { margin: 16px 0 20px; font-size: clamp(38px, 5vw, 65px); }
+.comingSoon { display: inline-block; border: 1px solid var(--line); border-radius: 3px; padding: 13px 28px; font: 11px/1.5 var(--font-wedding); margin-top: 26px; }
+.footer { padding: 30px 5%; display: flex; align-items: center; justify-content: space-between; gap: 20px; max-width: 1440px; margin: auto; border-top: 1px solid var(--line); }
+.footerBrand { font-size: 25px; letter-spacing: -.06em; }
+.footer p { font: 10px/1.7 var(--font-wedding); color: var(--muted); }
+.footer p span { color: var(--orange); padding: 0 10px; }
+.pageWrap { max-width: 1220px; margin: auto; padding: 0 50px; }
+.weekendSchedule { padding-top: 32px; }
+.pageWrap.itineraryPage { padding-bottom: clamp(40px, 6vw, 72px); }
+.faqContent { max-width: 840px; margin: auto; padding: 0 0 64px; }
+.faqContent h2 { font-size: 24px; }
+.visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.pageIntro { padding: 65px 0 50px; text-align: center; }
+.pageIntro h1 { color: var(--orange); font-size: clamp(38px, 6vw, 64px); letter-spacing: -.02em; margin: 14px auto 22px; max-width: 900px; }
+.introText { max-width: 620px; margin: auto; font-size: 17px; color: var(--muted); }
+.introDoodle, .addressDoodle, .galleryStatus > svg { display: none; }
+.venueAddress { background: #f3eadb; margin-top: 60px; padding: 40px; display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 30px; }
+.addressDoodle { width: 85px; color: var(--muted); }
+.venueAddress h2 { margin: 12px 0; }
+.venueAddress .textLink { margin-top: 18px; }
+.venueAddress > p { font-size: 14px; }
+.nextPage { padding: 60px 0; text-align: center; }
+.nextPage a { display: inline-flex; align-items: center; gap: 10px; font-size: clamp(23px, 3vw, 34px); letter-spacing: -.03em; margin-top: 15px; }
+.nextPageArrow { width: .6em; height: .6em; flex-shrink: 0; }
+.nextPage a:hover { color: var(--orange); }
+.stayGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 75px; align-items: center; padding: 12px 0 35px; }
+.stayGrid .polaroid { transform: rotate(-3deg); }
+.stayGrid .photoFrame { aspect-ratio: 1 / 1.05; }
+.stayGrid .polaroid figcaption { padding: 20px 0 24px; font-size: 18px; }
+.photoCredit { display: block; text-align: center; font: 9px/1.5 var(--font-wedding); color: var(--muted); margin-top: 23px; }
+.stayCopy h2 { margin: 13px 0 22px; }
+.stayCopy > p, .stayCopy address { font-size: 15px; }
+.clotheslineDoodle { display: block; width: min(220px, 60%); aspect-ratio: 563 / 365; margin: 24px auto 0; background: var(--orange); -webkit-mask: url('/dawn-ranch-sketch.svg') center / contain no-repeat; mask: url('/dawn-ranch-sketch.svg') center / contain no-repeat; pointer-events: none; }
+.inkDoodle { display: block; width: 80px; height: auto; flex-shrink: 0; mix-blend-mode: multiply; pointer-events: none; user-select: none; }
+.poolsideDoodles { position: relative; width: min(360px, 100%); margin: 24px auto 0; padding: 0 0 14px; }
+.poolsideDoodles .clotheslineDoodle { margin: 0; }
+.shortsDoodle { position: absolute; width: 96px; right: 5%; top: 8px; transform: rotate(9deg); }
+.flipFlopsDoodle { position: absolute; width: 68px; right: 18%; bottom: -8px; transform: rotate(-14deg); }
+.scheduleDoodle { width: 54px; margin-block: -8px; transform: rotate(7deg); }
+.getawayDoodle { width: 92px; margin: 20px 0 0 22px; transform: rotate(-8deg); }
+.riverDoodle { width: 64px; transform: rotate(-10deg); }
+.packingDoodle { float: right; width: 86px; margin: -5px 0 8px 20px; transform: rotate(9deg); }
+.stayCopy address { margin-top: 20px; }
+.stayCopy > .textLink { width: fit-content; margin-top: 22px; }
+.note { background: var(--peach-panel); padding: 25px 28px; margin-top: 30px; border: 0; }
+.note h3 { font-size: 22px; margin-bottom: 10px; }
+.note p { font-size: 14px; }
+.stayCopy .note { margin-bottom: 25px; }
+.patternNote::after { content: ""; display: block; height: 76px; margin: 24px -28px -25px; background: url('/wedding-meadow-pattern.png') center / 340px repeat, #fce5d8; background-blend-mode: multiply; pointer-events: none; }
+.stayScenes { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 28px 48px; margin: 24px auto -15px; }
+.stayLeisure { display: block; width: min(330px, 78vw); height: auto; mix-blend-mode: multiply; }
+.transportGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 65px; }
+.featurePanel { background: #f3eadb; padding: 40px; }
+.featurePanel .airportCode { font-size: 92px; font-weight: 400; line-height: 1.2; letter-spacing: -.055em; color: var(--peach); margin: 14px 0 18px; }
+.airportHeading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.travelGoose { width: clamp(100px, 12vw, 140px); height: auto; flex-shrink: 0; transform: rotate(3deg); }
+.riverFloat { display: block; width: min(320px, 65vw); height: auto; margin: -90px auto 8px; mix-blend-mode: multiply; pointer-events: none; }
+.homePlanning { padding-bottom: 130px; }
+.flightOrigin { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.flightOrigin h3 { font-size: 20px; font-weight: 650; margin-bottom: 9px; }
+.flightOrigin p { font-size: 15px; }
+.featurePanel h2 { font-size: 32px; margin-bottom: 18px; }
+.featurePanel > p:not(.eyebrow) { font-size: 15px; margin-top: 18px; }
+.featurePanel .textLink { margin-top: 25px; }
+.transportNotes section + section { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 30px; }
+.transportNotes h2 { font-size: 31px; margin: 12px 0 15px; }
+.transportNotes section > p:not(.eyebrow) { font-size: 15px; }
+.transportNotes .textLink { margin-top: 20px; }
+.tripStrip { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 24px 0; margin-bottom: 40px; }
+.illustratedTrip { display: grid; grid-template-columns: minmax(0, 1fr) 250px; align-items: center; gap: 36px; }
+.illustratedTrip p { text-wrap: balance; }
+.picnicIllustration { display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
+.tripStrip p { font-size: 20px; padding: 13px 0; }
+.tripStrip p span { padding: 0 9px; color: var(--orange); }
+.tripStrip small { font: 11px/1.7 var(--font-wedding); color: var(--muted); }
+.attractions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 30px; }
+.attraction { display: flex; flex-direction: column; padding-bottom: 30px; border-bottom: 1px solid var(--line); }
+.attractionTop { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 90px; padding: 24px 20px; margin-bottom: 20px; background: #f3eadb; }
+.attraction:nth-child(3n+2) .attractionTop { background-color: #f2dfb8; }
+.attraction:nth-child(3n) .attractionTop { background-color: var(--peach-panel); }
+.attractionTop svg { width: 61px; flex-shrink: 0; color: var(--muted); }
+.attraction:nth-child(3n+2) svg { color: var(--orange); }
+.placeArea { font: 10px/1.5 var(--font-wedding); color: var(--muted); }
+.attraction h2 { font-size: 29px; margin: 10px 0 16px; }
+.attraction > p:not(.placeArea, .smallNote) { font-size: 14px; }
+.attraction > .smallNote { margin: 18px 0 23px; }
+.attraction > .textLink { margin-top: auto; align-self: start; }
+.flightSection { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; padding-top: 65px; }
+.flightSection h2 { margin: 15px 0 23px; }
+.flightSection > div > p:last-child { font-size: 15px; }
+.airportList a { display: flex; align-items: center; gap: 22px; padding: 19px 0; border-bottom: 1px solid var(--line); }
+.airportList a:hover { color: var(--orange); }
+.airportList a strong { font-size: 29px; font-weight: 400; width: 63px; }
+.airportList a > span:nth-child(2) { flex: 1; font-size: 18px; }
+.airportList small { display: block; font: 10px/1.6 var(--font-wedding); color: var(--muted); margin-top: 5px; }
+.gallery { padding-bottom: 20px; }
+.galleryGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px; padding: 15px 8px; }
+.galleryPhoto { border: 0; color: var(--ink); text-align: center; transition: transform .2s; min-width: 0; }
+.galleryPhoto:nth-child(3n+1) { transform: rotate(-2deg); }
+.galleryPhoto:nth-child(3n) { transform: rotate(2deg); }
+.galleryPhoto:hover { transform: rotate(0) translateY(-5px); }
+.galleryCaption { display: block; padding: 17px 6px 21px; font-size: 14px; overflow-wrap: anywhere; }
+.galleryCaption small { display: block; color: var(--muted); margin-top: 6px; font: 10px/1.5 var(--font-wedding); }
+.photoFallback { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; font-size: 17px; color: var(--muted); }
+.photoFallback svg { width: 70px; }
+.galleryStatus { text-align: center; padding: 65px 25px; background: #eeeadf; }
+.weekendSection, .rsvpSection, .venueAddress, .note, .featurePanel, .attractionTop, .galleryStatus { --muted: #7b644d; }
+.galleryStatus > svg { width: 65px; color: var(--muted); margin-bottom: 24px; }
+.galleryStatus h2 { font-size: 35px; }
+.galleryStatus p { margin-top: 20px; }
+.galleryStatus .button { margin-top: 23px; }
+.galleryControls { text-align: center; padding: 35px 0 20px; }
+.galleryControls p { margin-bottom: 20px; }
+.galleryControls > .error { margin-top: 15px; }
+.lightbox { inset: 0; width: min(980px, 94vw); max-height: 94svh; border: none; margin: auto; padding: 18px; background: var(--paper); color: var(--ink); box-shadow: 0 10px 80px #0005; }
+.lightbox::backdrop { background: rgba(45, 42, 39, .8); }
+.lightboxTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font: 11px/1.5 var(--font-wedding); }
+.lightbox button { color: var(--ink); border: 1px solid var(--line); background: transparent; padding: 10px 14px; font: 12px/1.5 var(--font-wedding); }
+.lightboxImage { position: relative; height: min(65svh, 650px); }
+.lightboxImage img { object-fit: contain; }
+.lightboxBottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }
+.lightboxBottom p { text-align: center; font-size: 14px; overflow-wrap: anywhere; }
+.lightboxBottom button { flex-shrink: 0; }
+.gate { min-height: 100svh; display: flex; justify-content: center; align-items: center; position: relative; padding: 120px 25px 100px; overflow: hidden; }
+.gateBrand { position: absolute; left: 5%; top: 30px; font-size: 23px; color: var(--peach); }
+.gateCard { text-align: center; width: min(100%, 360px); padding: 30px 24px 25px; background: linear-gradient(145deg, #fffffe 0%, #fffcf8 100%); box-shadow: 0 8px 32px #00000018, 0 2px 8px #0000000d; border-radius: 12px; animation: gateFloat 6s ease-in-out infinite; }
+.gateCard h1 { font-size: 32px; color: var(--peach); font-weight: 400; letter-spacing: 0; line-height: 1.3; }
+.gateCard h1 span { color: var(--peach); }
+.gateIntro { margin-top: 8px; font-size: 13px; color: #888; }
+.passwordForm { margin: 32px auto 20px; max-width: 335px; text-align: left; }
+.passwordForm label { display: block; font: 11px/1.5 var(--font-wedding); margin-bottom: 9px; }
+.passwordField { display: flex; border: 1px solid rgba(184, 176, 168, .35); border-radius: 3px; background: rgba(0, 0, 0, .025); }
+.passwordField input { min-width: 0; width: 100%; border: 0; padding: 14px; color: var(--ink); background: transparent; font: 14px/1.5 var(--font-wedding); }
+.passwordField button { background: transparent; border: none; font: 10px var(--font-wedding); padding: 0 15px; color: var(--muted); }
+.passwordForm > .button { width: 100%; margin-top: 15px; }
+.error { color: #a02e25; font: 12px/1.6 var(--font-wedding); margin-top: 10px; }
+.gateDate { position: absolute; bottom: 30px; left: 20px; right: 20px; text-align: center; font-size: 12px; color: #b8b0a8; }
+.gateDate span { color: var(--orange); padding: 0 12px; }
+@media (max-width: 1000px) {
+  .header { gap: 20px; padding: 22px 4%; }
+  .nav { gap: 17px; }
+  .nav > a { font-size: 11px; }
+  .polaroid figcaption { font-size: 12px; }
+  .homePlanning { gap: 45px; }
+  .events { gap: 22px; }
+  .event h3 { font-size: 23px; }
+  .pageWrap { padding: 0 35px; }
+  .stayGrid { gap: 40px; }
+  .transportGrid, .flightSection { gap: 35px; }
+  .attractions { gap: 30px 22px; }
+  .attraction h2 { font-size: 25px; }
+  .attractionTop { padding: 14px; }
+  .attractionTop svg { width: 47px; }
+
+
+}
+@media (max-width: 760px) {
+  .header { position: relative; padding: 20px 6%; }
+  .brand { font-size: 21px; }
+  .brandIcon { width: 40px; height: 50px; }
+  .menuButton { display: block; font: 12px/1.5 var(--font-wedding) !important; border: 1px solid var(--line); padding: 9px 15px; border-radius: 3px; background: transparent; color: var(--ink); }
+  .nav { display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 10; background: var(--paper); padding: 15px 6% 25px; border-bottom: 1px solid var(--line); box-shadow: 0 10px 18px #513c4912; }
+  .navOpen { display: flex; flex-direction: column; gap: 0; align-items: stretch; }
+  .nav > a { padding: 15px 0; font-size: 13px; }
+  .weekendSection { padding: 42px 6%; }
+  .patternedWeekend { padding: 28px 18px; background-size: 300px; }
+  .weekendPaper { padding: 28px 22px; }
+  .sectionHeading { flex-direction: column; align-items: start; gap: 17px; margin-bottom: 30px; }
+  .events { grid-template-columns: 1fr; gap: 27px; }
+  .event h3 { font-size: 29px; margin: 4px 0 14px; }
+  .event .smallNote { margin-top: 12px; }
+  .homePlanning { grid-template-columns: 1fr; gap: 18px; padding: 50px 6%; }
+  .planningLinks > a { font-size: 24px; }
+  .rsvpSection { padding: 42px 6% 48px; }
+  .footer { flex-wrap: wrap; padding: 25px 6%; gap: 15px; }
+  .footer p { order: 3; width: 100%; }
+  .pageWrap { padding: 0 6%; }
+  .pageIntro { padding: 47px 0 36px; }
+  .pageIntro h1 { font-size: clamp(36px, 9vw, 55px); }
+  .introText { font-size: 16px; }
+
+  .venueAddress { grid-template-columns: 1fr; padding: 30px; gap: 22px; margin-top: 36px; }
+
+  .stayGrid { grid-template-columns: 1fr; gap: 40px; padding-top: 5px; }
+  .stayGrid > div:first-child { max-width: 430px; width: 94%; margin: auto; }
+  .stayGrid .photoFrame { aspect-ratio: 1.15; }
+  .transportGrid, .flightSection { grid-template-columns: 1fr; gap: 35px; }
+  .featurePanel { padding: 28px; }
+  .attractions { grid-template-columns: 1fr 1fr; gap: 30px 20px; }
+
+  .attractionTop svg { width: 43px; }
+  .attraction h2 { font-size: 25px; }
+  .attraction .eyebrow { font-size: 9px; }
+  .tripStrip p { font-size: 18px; }
+  .illustratedTrip { grid-template-columns: 1fr; gap: 12px; }
+  .picnicIllustration { width: 230px; max-width: 100%; margin: auto; }
+  .flightSection { padding-top: 45px; }
+  .nextPage { padding: 42px 0; }
+  .galleryGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 15px; }
+  .galleryCaption { font-size: 12px; padding: 12px 2px 16px; }
+  .galleryStatus { padding: 45px 20px; }
+  .lightbox { padding: 12px; }
+  .lightboxBottom { gap: 10px; }
+  .lightboxBottom p { font-size: 12px; }
+  .lightbox button { padding: 9px 11px; }
+  .gate { padding-top: 110px; padding-bottom: 105px; }
+
+
+  .gateDate { font-size: 8px; }
+}
+@media (max-width: 380px) { .attractions { grid-template-columns: 1fr; } }
+
+/* Keep the established wedding hero composition. */
+.hero { --font-wedding: "la-mericana", var(--font-fraunces), Georgia, serif; font-family: var(--font-wedding); position: relative; max-width: 1380px; margin: auto; padding: 48px 6% 22px; text-align: center; overflow: hidden; cursor: pointer; }
+.heroTitle { position: relative; margin-top: 10px; }
+.heroTitle h1 > span:first-child { text-transform: uppercase; }
+.heroTitle h1 { color: var(--peach); font-size: clamp(46px, 9vw, 124px); line-height: 1.05; letter-spacing: -.055em; font-weight: 580; }
+.heroAnnouncement { display: block; margin-top: 16px; color: var(--orange); font-size: clamp(27px, 3.6vw, 46px); font-weight: 400; letter-spacing: -.025em; line-height: 1.2; }
+.heroTitle .heroSubtitle { margin-top: 18px; font-size: clamp(21px, 2.4vw, 30px); font-style: italic; line-height: 1.3; }
+.heroBottom { position: relative; display: grid; grid-template-columns: 1fr 1.35fr 1fr; align-items: center; gap: 32px; max-width: 1030px; min-height: 240px; margin: 25px auto 38px; }
+.heroDetails { grid-column: 2; padding: 10px 0 0; position: relative; z-index: 1; }
+.heroDate { color: var(--orange); font-size: 29px; font-weight: 450; letter-spacing: -.025em; }
+.heroDetails > p:nth-child(2) { font-size: 15px; margin-top: 5px; }
+.heroRiver { width: 58px; height: 33px; color: #7f9477; margin: 14px 0 8px; }
+.heroPhotoLeft { transform: rotate(-8deg); margin-top: 4px; position: relative; }
+.heroPhotoLeft::before, .heroPhotoRight::before { content: ""; position: absolute; width: 82px; height: 25px; background: #dcc49885; top: -8px; left: calc(50% - 41px); transform: rotate(4deg); z-index: 2; }
+.heroPhotoRight { transform: rotate(8deg); }
+.heroRight { position: relative; }
+.heroSun { position: absolute; width: 100px; top: -101px; right: 20px; color: var(--soft-peach); transform: rotate(12deg); }
+.heroFoot { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.heroFoot > span { justify-self: start; }
+.heroFoot > a:nth-child(2) { font: 24px/1 Georgia, serif; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 50%; padding: 5px; }
+@keyframes gateFloat { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(-2deg); } }
+@media (max-width: 1000px) {
+  .hero { padding-left: 5%; padding-right: 5%; }
+  .heroBottom { gap: 20px; }
+  .heroSun { width: 77px; top: -85px; }
+}
+@media (max-width: 760px) {
+  .hero { padding-top: 37px; }
+  .heroTitle { margin-top: 18px; }
+  .heroTitle h1 { font-size: clamp(44px, 8.8vw, 68px); }
+  .heroBottom { grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 22px; max-width: 510px; }
+  .heroDetails { grid-column: 1 / -1; grid-row: 1; }
+  .heroPhotoLeft { max-width: 215px; margin: 12px 0 0 12px; }
+  .heroRight { margin: 23px 12px 0 0; }
+  .heroSun { width: 54px; top: -41px; right: -12px; }
+  .heroPhotoRight { max-width: 215px; }
+  .heroFoot { margin-top: 35px; font-size: 9px; }
+  .heroFoot > a:last-child { max-width: 85px; }
+  .heroFoot > span { max-width: 110px; text-align: left; }
+  .gateCard { padding: 27px 20px; }
+  .gateCard h1 { font-size: 29px; }
+}
+@media (max-width: 380px) { .heroBottom { gap: 15px; } }
+
+.droppedPhotos { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.droppedPhoto { position: absolute; width: 144px; padding: 10px 10px 0; border-radius: 2px; background: linear-gradient(145deg, #fffffe 0%, #fffcf8 100%); box-shadow: 0 4px 12px #0000000f, 0 1px 3px #0000000a; transform: rotate(var(--photo-angle)); animation: photoDrop 1.5s ease-in-out both, photoFade 2s 12s ease-in both; }
+.droppedPhoto > div { aspect-ratio: 1; position: relative; background: #e8e8e8; overflow: hidden; }
+.droppedPhoto img { object-fit: cover; }
+.droppedPhoto figcaption { height: 36px; padding-top: 10px; text-align: center; color: #666; font: italic 11px/1.3 Georgia, serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dropPhotoHint { position: relative; z-index: 3; display: block; margin: 16px auto 0; padding: 8px; border: 0; background: transparent; color: #b8b0a8; font-size: 13px; }
+@keyframes photoDrop { from { opacity: 0; transform: translate(20px, -150px) scale(1.7) rotate(calc(var(--photo-angle) + 20deg)); } 40% { opacity: 1; } to { opacity: 1; transform: translate(0, 0) scale(1) rotate(var(--photo-angle)); } }
+@keyframes photoFade { to { opacity: 0; } }
+@media (max-width: 600px) { .droppedPhoto { width: 110px; padding: 8px 8px 0; } }
+
+@media (prefers-reduced-motion: reduce) { .site *, .site *::before, .site *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
