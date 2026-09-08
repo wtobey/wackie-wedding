@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FAF9F7",
+  themeColor: "#FAF7F2",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -45,7 +45,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={fraunces.variable}>
-      <body>{children}</body>
+      <body>
+        <link rel="stylesheet" href="https://use.typekit.net/fhe5uug.css?v=postea" precedence="wedding-fonts" />
+        {children}
+      </body>
     </html>
   );
 }

@@ -216,7 +216,7 @@ export default function TypingMessage(): React.ReactElement {
     <span
       style={{
         fontFamily: 'var(--font-fraunces), Georgia, serif',
-        color: '#B8B0A8',
+        color: '#626847',
         fontSize: 'clamp(1rem, 3vw, 1.5rem)',
         height: '3em',
         lineHeight: 1.4,

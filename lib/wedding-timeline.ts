@@ -1,6 +1,6 @@
 import type { PolaroidImage } from "@/hooks/usePolaroidImages";
 
-export type TimelinePhoto = PolaroidImage & { isPreview?: boolean };
+export type TimelinePhoto = PolaroidImage & { isPreview?: boolean; sortOrder?: number; alt?: string };
 export type GalleryRow = { id: number; image_path: string; caption: string | null; photo_date: string | null };
 export const GALLERY_PAGE_SIZE = 200;
 
@@ -18,8 +18,8 @@ export function photoDateLabel(value: string | null): string {
 
 export function groupTimelinePhotos(photos: TimelinePhoto[]) {
   const unique = [...new Map(photos.map(photo => [photo.id, photo])).values()];
-  const dated = unique.filter(photo => photoTimestamp(photo.photoDate) !== null).sort((a, b) => photoTimestamp(a.photoDate)! - photoTimestamp(b.photoDate)! || a.id - b.id);
-  const undated = unique.filter(photo => photoTimestamp(photo.photoDate) === null).sort((a, b) => a.id - b.id);
+  const dated = unique.filter(photo => photoTimestamp(photo.photoDate) !== null).sort((a, b) => a.sortOrder !== undefined && b.sortOrder !== undefined ? a.sortOrder - b.sortOrder : photoTimestamp(a.photoDate)! - photoTimestamp(b.photoDate)! || a.id - b.id);
+  const undated = unique.filter(photo => photoTimestamp(photo.photoDate) === null).sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
   return { dated, undated };
 }
 

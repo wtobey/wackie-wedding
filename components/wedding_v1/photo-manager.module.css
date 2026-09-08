@@ -1,0 +1,21 @@
+.manager { max-width: 1160px; margin: auto; padding: 48px 28px 72px; color: var(--ink); }
+.manager h1 { font-size: clamp(32px, 5vw, 52px); margin: 0 0 16px; }
+.heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.manager button { padding: 10px 16px; border: 1px solid var(--espresso); background: var(--paper); color: var(--espresso); border-radius: 4px; font: inherit; }
+.manager button:disabled { opacity: .45; cursor: not-allowed; }
+.manager button[aria-pressed="true"] { background: var(--peach); font-weight: 700; }
+.manager label { display: grid; gap: 6px; font-size: 14px; }
+.manager input { min-width: 0; max-width: 100%; padding: 9px; color: var(--espresso); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; font: inherit; }
+.manager input[type="file"] { width: 100%; }
+.toolbar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; background: var(--paper); border-block: 1px solid var(--line); }
+.tabs { display: flex; gap: 8px; margin-right: auto; }
+.upload { padding: 22px; border: 1px dashed var(--espresso); margin-block: 24px; }
+.upload span { font-size: 13px; }
+.photos { display: grid; gap: 20px; }
+.photo { display: grid; grid-template-columns: 200px 1fr 190px; gap: 24px; padding: 24px; border: 1px solid var(--line); }
+.preview { position: relative; min-height: 200px; }
+.preview img { object-fit: contain; }
+.fields, .actions { display: grid; gap: 12px; align-content: start; }
+.manager .checkbox { display: flex; align-items: center; gap: 10px; }
+.error { border-left: 3px solid var(--espresso); padding: 12px; background: var(--peach); }
+@media (max-width: 760px) { .photo { grid-template-columns: 1fr; } .preview { height: 240px; } .heading { display: block; } .toolbar { position: static; } }

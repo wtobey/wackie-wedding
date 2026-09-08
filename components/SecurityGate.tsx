@@ -74,12 +74,12 @@ export default function SecurityGate({ children }: SecurityGateProps): React.Rea
       <div style={{
         width: '100vw',
         height: '100dvh',
-        background: '#FAF9F7',
+        background: '#FAF7F2',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        <ClipLoader size={32} color="#E8A87C" />
+        <ClipLoader size={32} color="#F09367" />
       </div>
     );
   }
@@ -90,7 +90,7 @@ export default function SecurityGate({ children }: SecurityGateProps): React.Rea
     <div style={{
       width: '100vw',
       height: '100dvh',
-      background: '#FAF9F7',
+      background: '#FAF7F2',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -122,7 +122,7 @@ export default function SecurityGate({ children }: SecurityGateProps): React.Rea
               fontFamily: 'var(--font-fraunces), Georgia, serif',
               fontWeight: 400,
               margin: 0,
-              color: '#E8A87C',
+              color: '#F09367',
             }}>
               Before we begin...
             </p>
@@ -156,7 +156,7 @@ export default function SecurityGate({ children }: SecurityGateProps): React.Rea
                   background: selectedIndex === index
                     ? 'rgba(232, 168, 124, 0.2)'
                     : 'rgba(0, 0, 0, 0.04)',
-                  color: selectedIndex === index ? '#E8A87C' : '#999',
+                  color: selectedIndex === index ? '#F09367' : '#999',
                   fontFamily: 'var(--font-fraunces), Georgia, serif',
                   fontWeight: 600,
                   fontSize: '13px',
@@ -239,7 +239,7 @@ export default function SecurityGate({ children }: SecurityGateProps): React.Rea
                 fontSize: '12px',
                 fontFamily: 'var(--font-fraunces), Georgia, serif',
                 fontWeight: 500,
-                color: '#e74c3c',
+                color: '#AB482D',
                 marginTop: '10px',
                 textAlign: 'center',
               }}>

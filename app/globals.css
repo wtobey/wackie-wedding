@@ -1,6 +1,7 @@
 :root {
-  --background: #faf9f7;
-  --peach: #e8a87c;
+  --font-main: "la-mericana", sans-serif;
+  --background: #FAF7F2;
+  --peach: #F09367;
 }
 
 * {
@@ -18,9 +19,10 @@ body {
 
 body {
   background: var(--background);
-  color: #213547;
-  /* next/font exposes Fraunces only through this variable (the family name is hashed). */
-  font-family: var(--font-fraunces), Georgia, serif;
+  color: color-mix(in srgb, #8A8635 62%, #000);
+  font-family: var(--font-main);
+  font-weight: 500;
+  font-style: normal;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

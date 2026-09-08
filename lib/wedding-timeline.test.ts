@@ -99,3 +99,14 @@ test("seeker handles endpoints, fractional scrolling, and one-photo albums", () 
   assert.equal(nearestPhotoIndex(-100, 336, 9), 0);
   assert.equal(nearestPhotoIndex(100, 0, 1), 0);
 });
+
+test('saved admin order overrides chronology while undated photos stay separate', () => {
+  const photos = [
+    { id: 1, imageUrl: '', caption: null, photoDate: '2020-01-01', sortOrder: 2 },
+    { id: 2, imageUrl: '', caption: null, photoDate: '2025-01-01', sortOrder: 0 },
+    { id: 3, imageUrl: '', caption: null, photoDate: null, sortOrder: 1 },
+  ];
+  const result = groupTimelinePhotos(photos);
+  assert.deepEqual(result.dated.map(photo => photo.id), [2, 1]);
+  assert.deepEqual(result.undated.map(photo => photo.id), [3]);
+});

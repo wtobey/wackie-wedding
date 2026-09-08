@@ -30,10 +30,11 @@ function setAccess(value: boolean) {
 const navigation = [
   ["Itinerary", "/wedding/our-wedding"],
   ["Accommodations", "/wedding/accommodations"],
-  ["Transportation", "/wedding/transportation"],
+  ["Travel Information", "/wedding/transportation"],
   ["Plan your trip", "/wedding/plan-your-trip"],
   ["Gallery", "/wedding/gallery"],
   ["FAQ", "/wedding/faq"],
+  ["Registry", "/wedding/registry"],
 ];
 
 export default function WeddingShell({ children }: { children: ReactNode }) {

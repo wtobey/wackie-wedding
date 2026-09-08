@@ -152,7 +152,7 @@ export default function MessageInput({ imageUrl, onSubmit, onClose }: MessageInp
               <div style={{
                 width: '100%',
                 height: '100%',
-                background: 'linear-gradient(135deg, #E8A87C22 0%, #E8A87C44 100%)',
+                background: 'linear-gradient(135deg, #F0936722 0%, #F0936744 100%)',
               }} />
             )}
             {/* Photo overlay effect */}
@@ -220,7 +220,7 @@ export default function MessageInput({ imageUrl, onSubmit, onClose }: MessageInp
                 <span style={{
                   fontSize: '12px',
                   fontWeight: 600,
-                  color: '#E8A87C',
+                  color: '#F09367',
                   fontFamily: 'var(--font-fraunces), Georgia, serif',
                 }}>
                   {MAX_LENGTH - charCount} left
@@ -236,7 +236,7 @@ export default function MessageInput({ imageUrl, onSubmit, onClose }: MessageInp
                   borderRadius: '4px',
                   fontSize: '12px',
                   fontWeight: 600,
-                  color: showSuccess ? '#E8A87C' : '#999',
+                  color: showSuccess ? '#F09367' : '#999',
                   fontFamily: 'var(--font-fraunces), Georgia, serif',
                   transition: 'background 0.2s, color 0.2s',
                   border: 'none',

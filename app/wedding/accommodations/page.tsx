@@ -18,6 +18,6 @@ export default function Accommodations() {
       <Image src="/wedding-sun-loungers.png" alt="" width={1536} height={1024} sizes="(max-width: 440px) 78vw, 330px" className={styles.stayLeisure}/>
       <Image src="/wedding-firepit-smores-color-blobs.png" alt="" width={1536} height={1024} sizes="(max-width: 440px) 78vw, 330px" className={styles.stayLeisure}/>
     </div>
-    <NextPage href="/wedding/transportation" label="Let’s get you here"/>
+    <NextPage href="/wedding/transportation" label="Let’s get you here" showEyebrow={false}/>
   </div>;
 }

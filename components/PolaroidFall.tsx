@@ -321,7 +321,7 @@ export default function PolaroidFall(): React.ReactElement {
       style={{
         width: '100vw',
         height: '100dvh',
-        background: '#FAF9F7',
+        background: '#FAF7F2',
         overflow: 'hidden',
         cursor: 'pointer',
         position: 'relative',
@@ -357,7 +357,7 @@ export default function PolaroidFall(): React.ReactElement {
           fontWeight: 400,
           margin: 0,
           whiteSpace: 'nowrap',
-          color: '#E8A87C',
+          color: '#F09367',
         }}>
           Coming Soon
         </p>
@@ -387,7 +387,7 @@ export default function PolaroidFall(): React.ReactElement {
               fontFamily: 'var(--font-fraunces), Georgia, serif',
               fontWeight: 500,
               margin: 0,
-              color: '#B8B0A8',
+              color: '#626847',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
@@ -412,7 +412,7 @@ export default function PolaroidFall(): React.ReactElement {
               fontFamily: 'var(--font-fraunces), Georgia, serif',
               fontWeight: 500,
               margin: 0,
-              color: '#B8B0A8',
+              color: '#626847',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
@@ -439,7 +439,7 @@ export default function PolaroidFall(): React.ReactElement {
               fontFamily: 'var(--font-fraunces), Georgia, serif',
               fontWeight: 500,
               margin: 0,
-              color: '#B8B0A8',
+              color: '#626847',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
@@ -451,7 +451,7 @@ export default function PolaroidFall(): React.ReactElement {
               fontFamily: 'var(--font-fraunces), Georgia, serif',
               fontWeight: 500,
               margin: 0,
-              color: '#B8B0A8',
+              color: '#626847',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',

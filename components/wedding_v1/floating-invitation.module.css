@@ -1,0 +1,20 @@
+.stage { position: relative; width: min(700px, 80vw, calc(100svh - 240px)); margin: 0 auto 28px; cursor: default; animation: gentleFloat 8s ease-in-out infinite; }
+.card { position: relative; overflow: hidden; box-shadow: 0 20px 40px -12px rgb(104 85 67 / 20%); transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform 180ms ease-out; }
+.artwork { display: block; width: 100%; height: auto; user-select: none; filter: saturate(.9); }
+.card { display: block; cursor: pointer; }
+.invitationLink { display: block; }
+.card:focus-within { outline: 3px solid #CE5A45; outline-offset: 6px; }
+.card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at var(--light-x, 50%) var(--light-y, 50%), rgb(255 255 255 / 17%), transparent 65%); opacity: var(--light-opacity, 0); transition: opacity 300ms ease; }
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage { animation: none; }
+  .card { transform: none; transition: none; }
+  .card::after { display: none; }
+}
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (max-width: 600px) {
+  .stage { width: 84vw; margin-top: 16px; margin-bottom: 42px; }
+}

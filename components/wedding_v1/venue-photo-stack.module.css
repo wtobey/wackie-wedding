@@ -1,0 +1,36 @@
+.album { min-width: 0; }
+.stack { position: relative; isolation: isolate; display: grid; width: 100%; padding: 28px 22px 34px; border: 0; background: transparent; color: var(--ink); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.card { grid-area: 1 / 1; min-width: 0; display: block; padding: 10px 10px 0; border-radius: 2px; background: linear-gradient(145deg, #fffffe, #fffcf8); box-shadow: 0 5px 16px #68554320, 0 1px 3px #0000000a; transform-origin: 50% 75%; will-change: transform, opacity; z-index: 0; transform: translate(-7px, 10px) rotate(-6deg); }
+.card[data-depth="0"] { z-index: 3; transform: rotate(-3deg); }
+.card[data-depth="1"] { z-index: 2; transform: translate(9px, 6px) rotate(3deg); }
+.card[data-depth="2"] { z-index: 1; transform: translate(-7px, 10px) rotate(-6deg); }
+.stack[data-flipping="true"] .card { animation-duration: 820ms; animation-timing-function: cubic-bezier(.22, 1, .36, 1); animation-fill-mode: both; }
+.stack[data-flipping="true"] .card[data-depth="0"] { animation-name: turnCard; }
+.stack[data-flipping="true"] .card[data-depth="1"] { animation-name: bringForward; }
+.stack[data-flipping="true"] .card[data-depth="2"] { animation-name: settleMiddle; }
+.frame { position: relative; display: block; aspect-ratio: 1 / 1.05; overflow: hidden; background: #f3eadb; }
+.frame img { object-fit: cover; }
+.caption { display: block; min-height: 66px; padding: 20px 4px 24px; font: italic 17px/1.25 "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive; text-align: center; letter-spacing: .01em; }
+.hint { text-align: center; font-size: 12px; color: var(--muted); }
+.fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--orange); }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@keyframes turnCard {
+  0% { transform: rotate(-3deg); opacity: 1; z-index: 4; }
+  40% { transform: translate(24%, -6%) rotate(10deg); opacity: 0; z-index: 4; }
+  /* Change layers only while invisible, then ease into the exact resting pose. */
+  41% { transform: translate(24%, -6%) rotate(10deg); opacity: 0; z-index: 1; }
+  85%, 100% { transform: translate(-7px, 10px) rotate(-6deg); opacity: 1; z-index: 1; }
+}
+@keyframes bringForward {
+  0% { transform: translate(9px, 6px) rotate(3deg); z-index: 3; }
+  85%, 100% { transform: rotate(-3deg); z-index: 3; }
+}
+@keyframes settleMiddle {
+  0% { transform: translate(-7px, 10px) rotate(-6deg); z-index: 2; }
+  85%, 100% { transform: translate(9px, 6px) rotate(3deg); z-index: 2; }
+}
+@media (max-width: 760px) {
+  .frame { aspect-ratio: 1.15; }
+  .caption { font-size: 14px; min-height: 60px; padding: 18px 4px 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .stack[data-flipping="true"] .card { animation: none; } }

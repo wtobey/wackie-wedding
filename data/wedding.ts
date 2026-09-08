@@ -14,37 +14,37 @@ export const wedding = {
 };
 
 export const weekendEvents = [
-  { day: "Friday", date: "June 4, 2027", number: "04", name: "Welcome Party (& Nana’s birthday bash)", location: "The Bandshell at Dawn Ranch", details: "", schedule: [], icon: "cheers" },
-  { day: "Saturday", date: "June 5, 2027", number: "05", name: "Wedding Ceremony & Reception", location: "The Orchard at Dawn Ranch", details: "Dress code: Black tie optional", schedule: ["Guests arrive at 4:40pm", "Ceremony begins at 5pm", "Reception & merriment to follow", "After party will be in the Lodge onsite from10pm-12am"], icon: "flower" },
-  { day: "Sunday", date: "June 6, 2027", number: "06", name: "Recovery Brunch", location: "The Kitchen Garden & Meadow at Dawn Ranch", details: "Dress code: Casual", schedule: ["9:30-11:30am - come and go as you please!"], icon: "coffee" },
+  { day: "Friday", date: "June 4, 2027", number: "04", name: "Welcome Party (& Nana’s birthday bash)", location: "The Bandshell at Dawn Ranch", details: "", schedule: ["Dinner, drinks, and s’mores galore. Additional details coming soon."], icon: "cheers" },
+  { day: "Saturday", date: "June 5, 2027", number: "05", name: "Wedding Ceremony & Reception", location: "The Orchard at Dawn Ranch", details: "Dress code: Black tie optional", schedule: ["The ceremony will take place in the late afternoon. Dinner & merriment to follow. There will be an onsite after party beginning at 10pm."], icon: "flower" },
+  { day: "Sunday", date: "June 6, 2027", number: "06", name: "Recovery Brunch", location: "The Kitchen Garden & Meadow at Dawn Ranch", details: "Dress code: Casual", schedule: ["Details coming soon.", "We know most folks will be heading home, so this will be a flexible event for those who'd like a bite before they hit the road."], icon: "coffee" },
 ] as const;
 
 // Original supplied copy; preserve wording when reused across pages.
 export const weddingTravel = {
   airport: "If there are routes from your home base, we recommend flying into the Charles M. Schulz–Sonoma County Airport, just a 20-30 min. drive to the venue.",
-  la: "For LA  friends and family, you can fly direct from LAX, BUR, ONT, and SNA",
-  phoenix: "For Phoenix friends and family, you can fly direct from PHX",
-  other: "Other flight options are available through Denver, Las Vegas, Seattle, Dallas, Portland, San Diego",
+  la: "You can fly direct from LAX, BUR, ONT, and SNA.",
+  phoenix: "Direct flights are available from PHX to STS.",
+  other: "Other flight options are available through Denver, Las Vegas, Seattle, Dallas, Portland, San Diego.",
   bayArea: "You may also fly into OAK or SFO if you’d like to explore more of Northern California, just be aware that drive times to the venue can be highly variable depending on weekday traffic.",
   stay: "We’ve reserved space for our guests to stay with us at Dawn Ranch, where all the wedding weekend festivities will take place.",
   booking: "A booking link will be shared at a later date to reserve rooms at a discounted rate.",
   alternatives: "In the event that all of the space at the venue is reserved, we will plan to share alternative hotel options at a later date.",
-  shuttle: "Riseshare is available from the Sonoma County Airport to Dawn Ranch, but is not reliably available for the return trip. For guests departing on Sunday, we will arrange a private shuttle for transportation to the Sonoma County Airport.",
+  shuttle: "Rideshare is available from the Sonoma County Airport to Dawn Ranch, but is not reliably available for the return trip. For guests departing on Sunday, we will arrange a private shuttle for transportation to the Sonoma County Airport.",
   parking: "There is parking available onsite for guests.",
   accessibleRooms: "Dawn Ranch offers ADA compliant guest rooms that are close to the Welcome Party and Recovery Brunch.",
 } as const;
 
 export const weddingFaqs = [
-  { question: "What's the dress code", answer: "Black tie optional." },
-  { question: "Is the ceremony indoors or outdoors", answer: "The ceremony and reception will be outdoors on grass. The afterparty will be indoors." },
-  { question: "What's the weather typically like", answer: "The weather is typically warm, 70s-80s and sunny." },
-  { question: "Is there parking, and can I leave my car overnight", answer: "Yes" },
+  { question: "What's the dress code?", answer: "Black tie optional." },
+  { question: "Is the ceremony indoors or outdoors?", answer: "The ceremony and reception will be outdoors on grass. The afterparty will be indoors." },
+  { question: "What's the weather typically like?", answer: "The weather is typically warm, 70s-80s and sunny." },
+  { question: "Is there parking, and can I leave my car overnight?", answer: "Yes" },
   // The source FAQ says 4:45pm; the schedule says 4:40pm. Awaiting confirmation.
-  { question: "What time should I arrive", answer: "Guests should plan to arrive at the Orchard for the ceremony at 4:45pm." },
-  { question: "Are the ceremony and reception in the same place", answer: "Yes" },
-  { question: "Is there an unplugged ceremony request", answer: "Yes" },
-  { question: "Dietary restrictions and how to flag them", answer: "There will be an option to flag dietary restrictions when you submit your RSVP." },
-  { question: "Accessibility, including terrain, stairs, and seating", answer: "All events will take place on variable terrain, including grass and paved walkways/courtyards. Seating will be available at every event. On Saturday, we will have a golf cart available to transport guests who could use assistance getting to the Orchard for the ceremony and reception. The afterparty will be upstairs in the lodge, and there is an ADA compliant lift to bypass the stairs. Dawn Ranch offers ADA compliant guest rooms that are close to the Welcome Party and Recovery Brunch." },
+  { question: "What time should I arrive?", answer: "Guests should plan to arrive at the Orchard for the ceremony at 4:45pm." },
+  { question: "Are the ceremony and reception in the same place?", answer: "Yes" },
+  { question: "Is there an unplugged ceremony request?", answer: "Yes" },
+  { question: "Dietary restrictions and how to flag them?", answer: "There will be an option to flag dietary restrictions when you submit your RSVP." },
+  { question: "Accessibility, including terrain, stairs, and seating?", answer: "All events will take place on variable terrain, including grass and paved walkways/courtyards. Seating will be available at every event. On Saturday, we will have a golf cart available to transport guests who could use assistance getting to the Orchard for the ceremony and reception. The afterparty will be upstairs in the lodge, and there is an ADA compliant lift to bypass the stairs. Dawn Ranch offers ADA compliant guest rooms that are close to the Welcome Party and Recovery Brunch." },
 ] as const;
 
 export const attractions = [
