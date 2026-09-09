@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { ManagedPhoto } from "@/lib/wedding-admin/types";
 import { type TimelinePhoto } from "@/lib/wedding-timeline";
 import PhotoTimeline from "./PhotoTimeline";
+import GalleryLoading from "./GalleryLoading";
 import styles from "@/app/wedding_v1/wedding.module.css";
 
 type GalleryState = { photos: TimelinePhoto[]; loading: boolean; error: boolean };
@@ -23,12 +24,13 @@ export default function WeddingGallery() {
 
   function retry() { setState({ photos: [], loading: true, error: false }); setAttempt(value => value + 1); }
 
+  if (state.loading) return <GalleryLoading/>;
   if (state.photos.length) return <PhotoTimeline photos={state.photos}/>;
   if (process.env.NODE_ENV === "development" && !state.loading && !state.error) return <PhotoTimeline photos={previewPhotos}/>;
   return <>
     <div className={styles.galleryStatus} aria-live="polite">
-      <h2>{state.loading ? "Gathering the years…" : state.error ? "The album needs a moment." : "More memories soon."}</h2>
-      <p>{state.loading ? "Putting our photos in order, from the first to the latest." : state.error ? "We couldn’t load the full photo collection. Please give it another try." : "We’re adding our favorite photos. Come back for a peek."}</p>
+      <h2>{state.error ? "The album needs a moment." : "More memories soon."}</h2>
+      <p>{state.error ? "We couldn’t load the full photo collection. Please give it another try." : "We’re adding our favorite photos. Come back for a peek."}</p>
       {state.error && <button className={styles.button} onClick={retry}>Try again ↗</button>}
     </div>
   </>;

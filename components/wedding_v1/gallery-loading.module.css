@@ -1,0 +1,11 @@
+.loading { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 32px; overflow: hidden; padding: 32px 0; }
+.album { display: flex; align-items: center; justify-content: center; gap: clamp(24px, 4vw, 52px); width: max-content; }
+.polaroid { width: min(56vw, 320px, 46dvh); flex-shrink: 0; padding: 10px 10px 24px; background: var(--paper-texture), var(--paper); border-radius: 2px; box-shadow: 0 5px 14px #623d2514, 0 1px 3px #623d2512; transform: rotate(-4deg); opacity: .5; }
+.polaroid:nth-child(2) { transform: rotate(2deg); opacity: 1; }
+.polaroid:nth-child(3) { transform: rotate(-3deg); }
+.photo { aspect-ratio: 1; background: color-mix(in srgb, var(--sage, #889063) 15%, var(--paper)); animation: breathe 2.4s ease-in-out infinite; }
+.polaroid:nth-child(2) .photo { background: color-mix(in srgb, var(--peach-panel, #f7b98a) 40%, var(--paper)); }
+.caption { width: 45%; height: 5px; margin: 24px auto 0; border-radius: 3px; background: color-mix(in srgb, var(--ink) 10%, var(--paper)); }
+.loading .label { margin: 0; font-size: 14px; letter-spacing: .025em; color: var(--muted, #80533f); }
+@keyframes breathe { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .photo { animation: none; } }

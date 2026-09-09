@@ -48,3 +48,8 @@
   .seeker { padding: 12px 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .photoButton, .card:nth-child(even) .photoButton { transition: none; } }
+
+.deferredPhoto { position: absolute; inset: 0; background: color-mix(in srgb, #889063 15%, var(--paper)); }
+.deferredPhoto img { opacity: 0; transition: opacity .2s ease; }
+.deferredPhoto[data-loaded="true"] img { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .deferredPhoto img { transition: none; } }

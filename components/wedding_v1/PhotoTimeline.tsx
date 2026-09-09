@@ -16,11 +16,34 @@ function subscribeMotion(listener: () => void) {
 }
 function reducedMotionSnapshot() { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
 
-const Photo = memo(function Photo({ photo, large = false }: { photo: TimelinePhoto; large?: boolean }) {
+const Photo = memo(function Photo({ photo, large = false, grid = false }: { photo: TimelinePhoto; large?: boolean; grid?: boolean }) {
+  const frame = useRef<HTMLDivElement>(null);
+  const [nearby, setNearby] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    const element = frame.current;
+    if (!element || large || photo.isPreview) return;
+    // Native lazy loading can prefetch several screens. Only give nearby cards
+    // an image URL, using the actual scrolling gallery as the observer root.
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        setNearby(true);
+        observer.disconnect();
+      }
+    }, { root: element.closest('[data-photo-scroll]'), rootMargin: '120px', threshold: 0 });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [large, photo.isPreview]);
   if (photo.isPreview) return <div className={timeline.samplePhoto} data-tone={photo.id % 3}><strong>W + J</strong><span>sample photo {photo.id}</span></div>;
   if (failed) return <div className={styles.photoFallback}>Photo unavailable</div>;
-  return <Image src={photo.imageUrl} alt={photo.alt || photo.caption || "A memory from Will and Jackie’s photo collection"} fill unoptimized sizes={large ? "90vw" : "(max-width: 600px) 65vw, 300px"} loading={large ? "eager" : "lazy"} onError={() => setFailed(true)}/>;
+  // Private uploads stay on the access-checked media route. Public Supabase
+  // originals can use Next's resized, cached thumbnails.
+  const storageUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const publicThumbnail = photo.imageUrl.startsWith('/') && !photo.imageUrl.startsWith('/api/') || Boolean(storageUrl && photo.imageUrl.startsWith(`${storageUrl}/storage/v1/object/public/`));
+  return <div ref={frame} className={timeline.deferredPhoto} data-loaded={loaded}>
+    {(large || nearby) && <Image src={photo.imageUrl} alt={photo.alt || photo.caption || "A memory from Will and Jackie’s photo collection"} fill unoptimized={large || !publicThumbnail} sizes={large ? "90vw" : grid ? "(max-width: 760px) 45vw, (max-width: 1200px) 30vw, 350px" : "(max-width: 600px) 62vw, 440px"} loading="eager" onLoad={() => setLoaded(true)} onError={() => setFailed(true)}/>}
+  </div>;
 });
 
 function PhotoDialog({ photos, initialIndex, onClose }: { photos: TimelinePhoto[]; initialIndex: number; onClose: () => void }) {
@@ -68,9 +91,9 @@ export default function PhotoTimeline({ photos }: { photos: TimelinePhoto[] }) {
 function PhotoGrid({ photos }: { photos: TimelinePhoto[] }) {
   const [selected, setSelected] = useState<number | null>(null);
   return <>
-    <div className={timeline.gridScroll} role="region" aria-label="Photo gallery" tabIndex={0}>
+    <div className={timeline.gridScroll} data-photo-scroll role="region" aria-label="Photo gallery" tabIndex={0}>
       <div className={styles.galleryGrid}>{photos.map((photo, index) => <button type="button" key={photo.id} className={`${styles.polaroid} ${styles.galleryPhoto}`} onClick={() => setSelected(index)} aria-label={`Open photo ${index + 1}${photo.caption ? `: ${photo.caption}` : ""}`}>
-        <div className={styles.photoFrame}><Photo photo={photo}/></div>
+        <div className={styles.photoFrame}><Photo photo={photo} grid/></div>
         <span className={styles.galleryCaption}>{photo.caption || "A little moment of us"}</span>
       </button>)}</div>
     </div>
@@ -220,7 +243,7 @@ function TimelineAlbum({ sequence, undated }: { sequence: TimelinePhoto[]; undat
     onTouchStartCapture={() => { touchHeld.current = true; allowInteraction(); }}
     onTouchEndCapture={event => { touchHeld.current = event.touches.length > 0; allowInteraction(); }}
     onTouchCancelCapture={() => { touchHeld.current = false; allowInteraction(); }}>
-    <div ref={rail} className={timeline.rail} data-active={active} tabIndex={0} role="region" aria-label="Photo timeline" onScroll={syncPosition} onKeyDown={event => {
+    <div ref={rail} className={timeline.rail} data-photo-scroll data-active={active} tabIndex={0} role="region" aria-label="Photo timeline" onScroll={syncPosition} onKeyDown={event => {
       if (event.key === "ArrowRight") { event.preventDefault(); seek(active + 1); }
       if (event.key === "ArrowLeft") { event.preventDefault(); seek(active - 1); }
       if (event.key === "Home") { event.preventDefault(); seek(0); }
