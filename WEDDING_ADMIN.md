@@ -9,16 +9,18 @@ The local generated password is in `ADMIN_ACCESS.local.md` (gitignored). Set `WE
 - Two collections: gallery (also used by homepage floating photos), and Dawn Ranch's accommodation stack.
 - Edit captions, accessibility descriptions, dates, inclusion, and order, then Save changes.
 - Move up/down controls work with mouse, touch, and keyboard. Gallery timeline displays dated photos in the saved order, then undated photos; dates label photos and do not override the chosen order.
-- Upload JPG, PNG or WebP, at most 15 MB and 40 megapixels each. Images are normalized to WebP, auto-oriented, resized to at most 2400 pixels, and metadata stripped. New uploads start excluded.
+- Upload JPG, PNG or WebP, at most 4 MB and 40 megapixels each. Images are normalized to WebP, auto-oriented, resized to at most 2400 pixels, and metadata stripped. New uploads start excluded.
 - Replacement uploads are saved immediately and preserve the photo's metadata, order and visibility. Save pending edits before replacing or uploading.
 - Conflicting saves from multiple tabs are rejected rather than overwriting the newer library. Reload to discard a stale draft. Exclusion is reversible; the UI does not permanently delete photos.
 
 ## Storage and hosting
 
-This implementation targets a **single persistent Node server**. Metadata is atomically saved in `.wedding-data/photos.json`; uploads live in `.wedding-data/uploads/`. Back up the entire directory together. Set `WEDDING_DATA_DIR` to an absolute persistent disk path in production, outside the public directory. The data directory and credentials are gitignored.
+On Vercel, `POSTGRES_URL` selects durable PostgreSQL storage for both the photo library and uploaded image bytes. The existing database is reused. Tables are initialized in the private `wedding_admin` schema; no anonymous database access is granted. Updates use an atomic revision check across server instances, so concurrent saves cannot silently overwrite each other. Back up this schema alongside the existing database. Uploads are limited to 4 MB to stay below Vercel's request size limit.
 
-**Do not deploy the disk store to an ephemeral/serverless host or multiple independent replicas.** Before using such hosting, migrate the store to durable database/object storage and shared rate limiting. Local edits are not synced back to Supabase.
+Without `POSTGRES_URL`, local development uses `.wedding-data/photos.json` and `.wedding-data/uploads/`. Back up that directory together. Vercel refuses to fall back to its temporary filesystem. Local changes are not automatically synced to production.
 
-On first initialization only, a configured `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` imports all existing polaroid metadata read-only, while retaining remote image URLs. The current v1 environment has neither configured; legacy `VITE_` credentials are not used. The five existing Dawn Ranch photos are always seeded. If importing a remote gallery later, merge it into the existing local library instead of deleting local edits/uploads.
+Set `WEDDING_ADMIN_PASSWORD` as a sensitive Production environment variable in Vercel and redeploy for changes to take effect. The existing login cooldown is process-local, so it is not a distributed rate limiter.
+
+On first initialization only, a configured `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` imports all existing polaroid metadata read-only, while retaining remote image URLs. The current v1 environment has neither configured; legacy `VITE_` credentials are not used. The current Dawn Ranch deck is always seeded, including the excluded older river photo. If importing a remote gallery later, merge it into the existing local library instead of deleting local edits/uploads.
 
 Excluding remote images removes them from this website, not from their original publicly accessible host. Local excluded uploads are served only to an authenticated admin. The guest welcome screen remains the existing lightweight guest gate, not private image hosting.

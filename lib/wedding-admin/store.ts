@@ -1,4 +1,5 @@
-import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
+import { usesDatabase, databaseLibrary, saveDatabaseLibrary, saveDatabaseMedia, readDatabaseMedia, deleteDatabaseMedia } from './database';
+import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -39,12 +40,15 @@ async function initialLibrary(): Promise<PhotoLibrary> {
   return { revision: 1, photos };
 }
 export async function writeLibrary(library: PhotoLibrary) {
+  if (usesDatabase) return saveDatabaseLibrary(library);
   await mkdir(dataDirectory, { recursive: true });
   const temporary = `${libraryPath}.${randomUUID()}.tmp`;
   await writeFile(temporary, JSON.stringify(library, null, 2), { mode: 0o600 });
   await rename(temporary, libraryPath);
 }
 export async function readLibrary(): Promise<PhotoLibrary> {
+  if (usesDatabase) return databaseLibrary(initialLibrary);
+  if (process.env.VERCEL) throw new Error("Production photo database is not configured.");
   try { return JSON.parse(await readFile(libraryPath, 'utf8')); }
   catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   return exclusive(async () => {
@@ -52,4 +56,18 @@ export async function readLibrary(): Promise<PhotoLibrary> {
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
     const library = await initialLibrary(); await writeLibrary(library); return library;
   });
+}
+
+export async function saveMedia(name: string, bytes: Buffer) {
+  if (usesDatabase) return saveDatabaseMedia(name, bytes);
+  await mkdir(uploadDirectory, { recursive: true });
+  await writeFile(path.join(uploadDirectory, name), bytes);
+}
+export async function readMedia(name: string) {
+  if (usesDatabase) return readDatabaseMedia(name);
+  return readFile(path.join(uploadDirectory, name));
+}
+export async function deleteMedia(name: string) {
+  if (usesDatabase) return deleteDatabaseMedia(name);
+  await unlink(path.join(uploadDirectory, name));
 }

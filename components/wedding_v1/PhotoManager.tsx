@@ -60,6 +60,7 @@ export default function PhotoManager() {
     setBusy(true); setError(''); let completed = 0;
     try {
       for (const file of Array.from(files)) {
+        if (file.size > 4 * 1024 * 1024) throw new Error("Choose an image up to 4 MB.");
         const form = new FormData(); form.set('file', file); form.set('collection', collection); if (replaceId) form.set('replaceId', replaceId);
         const data = await api('/api/wedding/admin/photos', { method: 'POST', body: form }); setLibrary(data); completed++;
       }
@@ -78,7 +79,7 @@ export default function PhotoManager() {
       <span>{dirty ? 'Unsaved changes' : `${photos.length} photos · ${photos.filter(photo => photo.included).length} included`}</span>
     </div>
     <p>Use the arrows to arrange photos. Dates label the gallery timeline; undated photos appear at the end. Excluded photos stay in this manager.</p>
-    <label className={styles.upload}>Upload photos<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={busy || dirty || !library} onChange={event => { void upload(event.target.files); event.target.value = ''; }}/><span>JPG, PNG or WebP · up to 15 MB each{dirty ? ' · Save your edits before uploading or replacing photos.' : ''}</span></label>
+    <label className={styles.upload}>Upload photos<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={busy || dirty || !library} onChange={event => { void upload(event.target.files); event.target.value = ''; }}/><span>JPG, PNG or WebP · up to 4 MB each{dirty ? ' · Save your edits before uploading or replacing photos.' : ''}</span></label>
     {error && <p className={styles.error} role="alert">{error}</p>}{message && <p role="status">{message}</p>}
     {!library ? <p>The library has not loaded. Use Reload to try again.</p> : !photos.length ? <p>No photos in this collection yet. Upload your first memory above.</p> : <div className={styles.photos}>{photos.map((photo, index) => <article className={styles.photo} key={photo.id}>
       <div className={styles.preview}><Image src={photo.imageUrl} alt={photo.alt || photo.caption || 'Photo preview'} fill unoptimized sizes="240px"/></div>

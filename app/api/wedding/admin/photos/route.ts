@@ -1,22 +1,21 @@
+import { LibraryConflict } from '@/lib/wedding-admin/database';
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile, unlink } from 'node:fs/promises';
-import path from 'node:path';
 import sharp from 'sharp';
 import { isAdmin, sameOrigin } from '@/lib/wedding-admin/auth';
-import { exclusive, readLibrary, uploadDirectory, writeLibrary } from '@/lib/wedding-admin/store';
+import { exclusive, readLibrary, saveMedia, deleteMedia, writeLibrary } from '@/lib/wedding-admin/store';
 import { photoTimestamp } from '@/lib/wedding-timeline';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 async function bounded(request: Request, limit: number) {
   if (!request.body) throw new Error('No request body.');
   const reader = request.body.getReader(); const chunks: Uint8Array[] = []; let size = 0;
-  while (true) { const { done, value } = await reader.read(); if (done) break; size += value.length; if (size > limit) { await reader.cancel(); throw new Error('The upload is too large. Maximum 15 MB per photo.'); } chunks.push(value); }
+  while (true) { const { done, value } = await reader.read(); if (done) break; size += value.length; if (size > limit) { await reader.cancel(); throw new Error('The upload is too large. Maximum 4 MB per photo.'); } chunks.push(value); }
   return new Request(request.url, { method: 'POST', headers: request.headers, body: Buffer.concat(chunks) });
 }
 export async function GET() {
   if (!await isAdmin()) return new Response(null, { status: 401 });
   try { return Response.json(await readLibrary(), { headers: { 'Cache-Control': 'no-store' } }); }
-  catch { return Response.json({ error: 'The photo library could not be loaded. Please retry.' }, { status: 503 }); }
+  catch (error) { console.error('Photo library unavailable', error instanceof Error ? error.message : 'Unknown storage error'); return Response.json({ error: 'The photo library could not be loaded. Please retry.' }, { status: 503 }); }
 }
 export async function PUT(request: Request) {
   if (!await isAdmin()) return new Response(null, { status: 401 });
@@ -40,20 +39,20 @@ export async function PUT(request: Request) {
       });
       const updated = { revision: current.revision + 1, photos }; await writeLibrary(updated); return Response.json(updated);
     });
-  } catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Could not save changes.' }, { status: 400 }); }
+  } catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Could not save changes.' }, { status: error instanceof LibraryConflict ? 409 : 400 }); }
 }
 export async function POST(request: Request) {
   if (!await isAdmin()) return new Response(null, { status: 401 });
   if (!sameOrigin(request)) return new Response(null, { status: 403 });
   let destination: string | undefined;
   try {
-    const form = await (await bounded(request, 16 * 1024 * 1024)).formData();
+    const form = await (await bounded(request, 4 * 1024 * 1024 + 65536)).formData();
     const file = form.get('file'); const collection = form.get('collection'); const replaceId = form.get('replaceId');
-    if (!(file instanceof File) || file.size > 15 * 1024 * 1024 || !['image/jpeg','image/png','image/webp'].includes(file.type)) throw new Error('Choose a JPG, PNG, or WebP image up to 15 MB.');
+    if (!(file instanceof File) || file.size > 4 * 1024 * 1024 || !['image/jpeg','image/png','image/webp'].includes(file.type)) throw new Error('Choose a JPG, PNG, or WebP image up to 4 MB.');
     if (collection !== 'gallery' && collection !== 'venue') throw new Error('Choose a photo collection.');
     const bytes = await sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 40000000 }).rotate().resize({ width: 2400, height: 2400, fit: 'inside', withoutEnlargement: true }).webp({ quality: 88 }).toBuffer();
-    const filename = `${randomUUID()}.webp`; await mkdir(uploadDirectory, { recursive: true });
-    destination = path.join(uploadDirectory, filename); await writeFile(destination, bytes);
+    const filename = `${randomUUID()}.webp`;
+    await saveMedia(filename, bytes); destination = filename;
     await readLibrary();
     return await exclusive(async () => {
       const current = await readLibrary();
@@ -66,7 +65,7 @@ export async function POST(request: Request) {
       current.revision++; await writeLibrary(current); return Response.json(current);
     });
   } catch (error) {
-    if (destination) await unlink(destination).catch(() => {});
-    return Response.json({ error: error instanceof Error ? error.message : 'Upload failed. Please retry.' }, { status: 400 });
+    if (destination) await deleteMedia(destination).catch(() => {});
+    return Response.json({ error: error instanceof Error ? error.message : 'Upload failed. Please retry.' }, { status: error instanceof LibraryConflict ? 409 : 400 });
   }
 }
