@@ -1,4 +1,5 @@
 'use client';
+import { cropStyle, defaultCrop } from '@/lib/wedding-admin/crop';
 import Image from 'next/image';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { ManagedPhoto, PhotoCollection, PhotoLibrary } from '@/lib/wedding-admin/types';
@@ -82,7 +83,14 @@ export default function PhotoManager() {
     <label className={styles.upload}>Upload photos<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={busy || dirty || !library} onChange={event => { void upload(event.target.files); event.target.value = ''; }}/><span>JPG, PNG or WebP · up to 4 MB each{dirty ? ' · Save your edits before uploading or replacing photos.' : ''}</span></label>
     {error && <p className={styles.error} role="alert">{error}</p>}{message && <p role="status">{message}</p>}
     {!library ? <p>The library has not loaded. Use Reload to try again.</p> : !photos.length ? <p>No photos in this collection yet. Upload your first memory above.</p> : <div className={styles.photos}>{photos.map((photo, index) => <article className={styles.photo} key={photo.id}>
-      <div className={styles.preview}><Image src={photo.imageUrl} alt={photo.alt || photo.caption || 'Photo preview'} fill unoptimized sizes="240px"/></div>
+      <div>
+        <div className={styles.preview} data-collection={photo.collection}><Image style={cropStyle(photo.crop)} src={photo.imageUrl} alt={photo.alt || photo.caption || 'Photo preview'} fill unoptimized sizes="240px"/></div>
+        <details className={styles.cropControls}><summary>Adjust crop</summary>
+          <p>Frame the photo on cards. The full-size original is preserved.</p>
+          {([['zoom', 'Zoom', 1, 3, 0.05], ['x', 'Horizontal position', 0, 100, 1], ['y', 'Vertical position', 0, 100, 1]] as const).map(([key, label, min, max, step]) => <label key={key}>{label}<input aria-label={`${label} for photo ${index + 1}`} type="range" min={min} max={max} step={step} value={(photo.crop ?? defaultCrop)[key]} disabled={busy} onChange={event => edit(photo.id, { crop: { ...(photo.crop ?? defaultCrop), [key]: Number(event.target.value) } })}/></label>)}
+          <button type="button" disabled={busy} onClick={() => edit(photo.id, { crop: { ...defaultCrop } })}>Reset crop</button>
+        </details>
+      </div>
       <div className={styles.fields}><label>Caption<input value={photo.caption} maxLength={500} disabled={busy} onChange={event => edit(photo.id, { caption: event.target.value })}/></label><label>Description for accessibility<input value={photo.alt} maxLength={500} disabled={busy} onChange={event => edit(photo.id, { alt: event.target.value })}/></label><label>Photo date<input type="date" value={photo.photoDate || ''} disabled={busy} onChange={event => edit(photo.id, { photoDate: event.target.value || null })}/></label><label className={styles.checkbox}><input type="checkbox" checked={photo.included} disabled={busy} onChange={event => edit(photo.id, { included: event.target.checked })}/>Include on website</label></div>
       <div className={styles.actions}><span>Position {index + 1}</span><button disabled={busy || index === 0} onClick={() => move(photo.id, -1)} aria-label={`Move photo ${index + 1} up`}>↑ Move up</button><button disabled={busy || index === photos.length - 1} onClick={() => move(photo.id, 1)} aria-label={`Move photo ${index + 1} down`}>↓ Move down</button><label>Replace photo<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || dirty} onChange={event => { void upload(event.target.files, photo.id); event.target.value = ''; }}/></label></div>
     </article>)}</div>}

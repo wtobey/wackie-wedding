@@ -80,10 +80,10 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
 
   return <div className={`${styles.site} ${fullHeightGallery ? styles.gallerySite : ""}`}>
     {!unlocked && pathname !== "/wedding_v1/admin" ? <main className={styles.gate}>
-      <Link href="/" className={styles.gateBrand}>will + jackie</Link>
+      <Link href="/" className={styles.gateBrand}>Will + Jackie</Link>
       <div className={styles.gateCard}>
         <h1>Before we begin...</h1>
-        <p className={styles.gateIntro}>a little password, and you’re part of the party.</p>
+        <p className={styles.gateIntro}>Enter the password from your invitation to join us.</p>
         <form onSubmit={enter} className={styles.passwordForm}>
           <label htmlFor="wedding-password">The wedding password</label>
           <div className={styles.passwordField}>

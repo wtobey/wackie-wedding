@@ -1,9 +1,11 @@
 "use client";
 
+import { cropStyle } from '@/lib/wedding-admin/crop';
+
 import Image from "next/image";
 import InkDoodle from "./InkDoodle";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { advanceTimelinePosition, groupTimelinePhotos, nearestPhotoIndex, timelineScrollAnchor, timelineVisualPosition, type TimelinePhoto } from "@/lib/wedding-timeline";
+import { advanceTimelinePosition, groupTimelinePhotos, photoDateLabel, nearestPhotoIndex, timelineScrollAnchor, timelineVisualPosition, type TimelinePhoto } from "@/lib/wedding-timeline";
 import styles from "@/app/wedding_v1/wedding.module.css";
 import timeline from "./photo-timeline.module.css";
 
@@ -42,7 +44,7 @@ const Photo = memo(function Photo({ photo, large = false, grid = false }: { phot
   const storageUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publicThumbnail = photo.imageUrl.startsWith('/') && !photo.imageUrl.startsWith('/api/') || Boolean(storageUrl && photo.imageUrl.startsWith(`${storageUrl}/storage/v1/object/public/`));
   return <div ref={frame} className={timeline.deferredPhoto} data-loaded={loaded}>
-    {(large || nearby) && <Image src={photo.imageUrl} alt={photo.alt || photo.caption || "A memory from Will and Jackie’s photo collection"} fill unoptimized={large || !publicThumbnail} sizes={large ? "90vw" : grid ? "(max-width: 760px) 45vw, (max-width: 1200px) 30vw, 350px" : "(max-width: 600px) 62vw, 440px"} loading="eager" onLoad={() => setLoaded(true)} onError={() => setFailed(true)}/>}
+    {(large || nearby) && <Image style={large ? undefined : cropStyle(photo.crop)} src={photo.imageUrl} alt={photo.alt || photo.caption || "A memory from Will and Jackie’s photo collection"} fill unoptimized={large || !publicThumbnail} sizes={large ? "90vw" : grid ? "(max-width: 760px) 45vw, (max-width: 1200px) 30vw, 350px" : "(max-width: 600px) 62vw, 440px"} loading="eager" onLoad={() => setLoaded(true)} onError={() => setFailed(true)}/>}
   </div>;
 });
 
@@ -64,7 +66,7 @@ function PhotoDialog({ photos, initialIndex, onClose }: { photos: TimelinePhoto[
   }}>
     <div className={styles.lightboxTop}><span aria-live="polite">{index + 1} / {photos.length}</span><button autoFocus onClick={onClose} aria-label="Close photo viewer">Close ×</button></div>
     <div className={styles.lightboxImage}><Photo key={photo.id} photo={photo} large/></div>
-    <div className={styles.lightboxBottom}><button onClick={() => move(-1)} aria-label="Previous photo" disabled={photos.length < 2}>←</button><p>{photo.caption || "A little moment, a lovely memory."}</p><button onClick={() => move(1)} aria-label="Next photo" disabled={photos.length < 2}>→</button></div>
+    <div className={styles.lightboxBottom}><button onClick={() => move(-1)} aria-label="Previous photo" disabled={photos.length < 2}>←</button><p>{photo.caption?.trim() || photoDateLabel(photo.photoDate)}</p><button onClick={() => move(1)} aria-label="Next photo" disabled={photos.length < 2}>→</button></div>
   </dialog>;
 }
 
@@ -94,7 +96,7 @@ function PhotoGrid({ photos }: { photos: TimelinePhoto[] }) {
     <div className={timeline.gridScroll} data-photo-scroll role="region" aria-label="Photo gallery" tabIndex={0}>
       <div className={styles.galleryGrid}>{photos.map((photo, index) => <button type="button" key={photo.id} className={`${styles.polaroid} ${styles.galleryPhoto}`} onClick={() => setSelected(index)} aria-label={`Open photo ${index + 1}${photo.caption ? `: ${photo.caption}` : ""}`}>
         <div className={styles.photoFrame}><Photo photo={photo} grid/></div>
-        <span className={styles.galleryCaption}>{photo.caption || "A little moment of us"}</span>
+        <span className={styles.galleryCaption}>{photo.caption?.trim() || photoDateLabel(photo.photoDate)}</span>
       </button>)}</div>
     </div>
     {selected !== null && <PhotoDialog photos={photos} initialIndex={selected} onClose={() => setSelected(null)}/>}
@@ -255,7 +257,7 @@ function TimelineAlbum({ sequence, undated }: { sequence: TimelinePhoto[]; undat
         </li>
         {sequence.map((photo, index) => <li key={photo.id} ref={element => { cards.current[index + 1] = element; }} className={timeline.card} data-current={index + 1 === active}>
         <button className={`${styles.polaroid} ${timeline.photoButton}`} onClick={() => openPhoto(index)} aria-label={`Open photo ${index + 1}${photo.caption ? `: ${photo.caption}` : ""}`}>
-          <div className={styles.photoFrame}><Photo photo={photo}/></div><span className={timeline.caption}>{photo.caption || "A little moment of us"}</span>
+          <div className={styles.photoFrame}><Photo photo={photo}/></div><span className={timeline.caption}>{photo.caption?.trim() || photoDateLabel(photo.photoDate)}</span>
         </button>
         {index % 3 === 0 && index < sequence.length - 1 && <span className={timeline.gapDoodle} aria-hidden="true"><InkDoodle kind={gapDoodles[Math.floor(index / 3) % gapDoodles.length]} size={48}/></span>}
       </li>)}</ol>
@@ -269,7 +271,7 @@ function TimelineAlbum({ sequence, undated }: { sequence: TimelinePhoto[]; undat
         }}/>
       </div>
     </section>
-    {undated.length > 0 && <details className={timeline.undated}><summary>More memories ({undated.length})</summary><div className={styles.galleryGrid}>{undated.map((photo, index) => <button className={`${styles.polaroid} ${styles.galleryPhoto}`} key={photo.id} onClick={() => openPhoto(sequence.length + index)} aria-label={`Open additional photo ${index + 1}`}><div className={styles.photoFrame}><Photo photo={photo}/></div><span className={styles.galleryCaption}>{photo.caption || "A little moment of us"}</span></button>)}</div></details>}
+    {undated.length > 0 && <details className={timeline.undated}><summary>More memories ({undated.length})</summary><div className={styles.galleryGrid}>{undated.map((photo, index) => <button className={`${styles.polaroid} ${styles.galleryPhoto}`} key={photo.id} onClick={() => openPhoto(sequence.length + index)} aria-label={`Open additional photo ${index + 1}`}><div className={styles.photoFrame}><Photo photo={photo}/></div><span className={styles.galleryCaption}>{photo.caption?.trim() || photoDateLabel(photo.photoDate)}</span></button>)}</div></details>}
     {selected !== null && <PhotoDialog photos={allPhotos} initialIndex={selected} onClose={() => setSelected(null)}/>}
   </div>;
 }

@@ -1,22 +1,23 @@
 "use client";
 
+import { cropStyle, type PhotoCrop } from '@/lib/wedding-admin/crop';
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./venue-photo-stack.module.css";
 
 
-function StackPhoto({ src, alt }: { src: string; alt: string }) {
+function StackPhoto({ src, alt, crop }: { src: string; alt: string; crop?: PhotoCrop }) {
   const [failed, setFailed] = useState(false);
-  return failed ? <span className={styles.fallback}>Dawn Ranch</span> : <Image src={src} alt={alt} fill sizes="(max-width: 760px) 80vw, 480px" loading="eager" unoptimized={src.startsWith("http")} onError={() => setFailed(true)}/>;
+  return failed ? <span className={styles.fallback}>Dawn Ranch</span> : <Image style={cropStyle(crop)} src={src} alt={alt} fill sizes="(max-width: 760px) 80vw, 480px" loading="eager" unoptimized={src.startsWith("http") || src.startsWith("/api/")} onError={() => setFailed(true)}/>;
 }
 
 export default function VenuePhotoStack() {
-  const [photos, setPhotos] = useState<{ src: string; alt: string; caption: string }[]>([]);
+  const [photos, setPhotos] = useState<{ src: string; alt: string; caption: string; crop?: PhotoCrop }[]>([]);
   useEffect(() => {
     const controller = new AbortController();
     fetch('/api/wedding/photos?collection=venue', { signal: controller.signal, cache: 'no-store' })
       .then(async response => { if (!response.ok) throw new Error('Unavailable'); return response.json(); })
-      .then((rows: { imageUrl: string; alt: string; caption: string }[]) => setPhotos(rows.map(photo => ({ src: photo.imageUrl, alt: photo.alt || photo.caption, caption: photo.caption }))))
+      .then((rows: { imageUrl: string; alt: string; caption: string; crop?: PhotoCrop }[]) => setPhotos(rows.map(photo => ({ src: photo.imageUrl, alt: photo.alt || photo.caption, caption: photo.caption, crop: photo.crop }))))
       .catch(() => {});
     return () => controller.abort();
   }, []);
@@ -52,7 +53,7 @@ export default function VenuePhotoStack() {
       {photos.map((photo, index) => {
         const depth = (index - current + photos.length) % photos.length;
         return <span key={photo.src} className={styles.card} data-depth={depth} aria-hidden={depth !== 0} onAnimationEnd={event => { if (depth === 0 && event.target === event.currentTarget) finishFlip(); }}>
-          <span className={styles.frame}><StackPhoto src={photo.src} alt={photo.alt}/></span>
+          <span className={styles.frame}><StackPhoto src={photo.src} alt={photo.alt} crop={photo.crop}/></span>
           <span className={styles.caption}>{photo.caption}</span>
         </span>;
       })}

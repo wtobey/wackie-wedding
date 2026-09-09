@@ -738,3 +738,21 @@
     transform: none;
   }
 }
+
+/* A quiet invitation-style welcome, with the date in the page flow. */
+.site > .gate { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; align-items: center; gap: 36px; padding: 32px 24px 24px; overflow: visible; background: #F7D3C3; }
+.gate .gateBrand { position: static; color: var(--orange); font-family: var(--font-main); font-size: clamp(24px, 4vw, 32px); letter-spacing: .02em; text-decoration: none; }
+.gate .gateCard { width: min(100%, 540px); padding: clamp(32px, 6vw, 60px); background: var(--paper-texture), var(--paper); border: 1px solid var(--line); border-radius: 0; box-shadow: 0 12px 35px #5429160a; animation: none; outline: 1px solid var(--line); outline-offset: -9px; }
+.site.site .gateCard h1 { font-size: clamp(36px, 6vw, 52px); line-height: 1.08; letter-spacing: -.025em; color: var(--orange); }
+.site .gateCard .gateIntro { font-size: 15px; line-height: 1.65; margin-top: 18px; }
+.gate .passwordForm { max-width: none; margin: 32px auto 24px; }
+.gate .passwordForm label { font-size: 13px; }
+.gate .passwordField { background: transparent; border: 1px solid var(--line); border-radius: 0; }
+.gate .passwordField:focus-within { outline: 2px solid var(--orange); outline-offset: 3px; }
+.gate .passwordField input { padding: 16px 14px; font-size: 16px; outline: none; }
+.gate .passwordField button { font-size: 12px; }
+.gate .passwordForm > .button { min-height: 52px; border-radius: 0; background: var(--orange); border-color: var(--orange); color: var(--paper); }
+.gate .passwordForm > .button:hover { background: var(--espresso); }
+.site .gateCard .smallNote { font-size: 12px; line-height: 1.65; }
+.site .gate .gateDate { position: static; margin: 0; font-size: 12px; letter-spacing: .025em; text-wrap: balance; }
+@media (max-width: 480px) { .site > .gate { padding-inline: 20px; gap: 28px; } .gate .gateCard { padding: 38px 28px; } }

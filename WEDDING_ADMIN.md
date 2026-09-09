@@ -8,6 +8,7 @@ The local generated password is in `ADMIN_ACCESS.local.md` (gitignored). Set `WE
 
 - Two collections: gallery (also used by homepage floating photos), and Dawn Ranch's accommodation stack.
 - Edit captions, accessibility descriptions, dates, inclusion, and order, then Save changes.
+- Open **Adjust crop** beneath a preview to change zoom and horizontal/vertical framing. Reset crop restores centered framing. Save changes applies the crop to gallery cards and the Dawn Ranch Polaroids; full-size gallery viewing keeps the original image. Replacing a photo resets its crop.
 - Move up/down controls work with mouse, touch, and keyboard. Gallery timeline displays dated photos in the saved order, then undated photos; dates label photos and do not override the chosen order.
 - Upload JPG, PNG or WebP, at most 4 MB and 40 megapixels each. Images are normalized to WebP, auto-oriented, resized to at most 2400 pixels, and metadata stripped. New uploads start excluded.
 - Replacement uploads are saved immediately and preserve the photo's metadata, order and visibility. Save pending edits before replacing or uploading.

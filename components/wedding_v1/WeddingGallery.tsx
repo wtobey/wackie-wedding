@@ -17,7 +17,7 @@ export default function WeddingGallery() {
     const controller = new AbortController();
     fetch('/api/wedding/photos?collection=gallery', { signal: controller.signal, cache: 'no-store' })
       .then(async response => { if (!response.ok) throw new Error('Could not load photos'); return response.json(); })
-      .then((rows: ManagedPhoto[]) => setState({ photos: rows.map((row, index) => ({ id: index + 1, caption: row.caption, alt: row.alt, photoDate: row.photoDate, imageUrl: row.imageUrl, sortOrder: index })), loading: false, error: false }))
+      .then((rows: ManagedPhoto[]) => setState({ photos: rows.map((row, index) => ({ id: index + 1, caption: row.caption, crop: row.crop, alt: row.alt, photoDate: row.photoDate, imageUrl: row.imageUrl, sortOrder: index })), loading: false, error: false }))
       .catch(() => { if (!controller.signal.aborted) setState({ photos: [], loading: false, error: true }); });
     return () => controller.abort();
   }, [attempt]);

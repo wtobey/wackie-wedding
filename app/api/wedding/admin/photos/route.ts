@@ -1,3 +1,4 @@
+import { validCrop } from '@/lib/wedding-admin/crop';
 import { LibraryConflict } from '@/lib/wedding-admin/database';
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
@@ -35,7 +36,9 @@ export async function PUT(request: Request) {
         ids.add(existing.id);
         if (typeof item.caption !== 'string' || item.caption.length > 500 || typeof item.alt !== 'string' || item.alt.length > 500 || typeof item.included !== 'boolean') throw new Error('Please check the photo details.');
         if (item.photoDate !== null && (typeof item.photoDate !== 'string' || photoTimestamp(item.photoDate) === null)) throw new Error('Please enter a valid photo date.');
-        return { ...existing, caption: item.caption, alt: item.alt, included: item.included, photoDate: item.photoDate as string | null };
+        if (item.crop !== undefined && !validCrop(item.crop)) throw new Error('Please check the crop position and zoom.');
+        const crop = item.crop === undefined ? existing.crop : { x: item.crop.x, y: item.crop.y, zoom: item.crop.zoom };
+        return { ...existing, crop, caption: item.caption, alt: item.alt, included: item.included, photoDate: item.photoDate as string | null };
       });
       const updated = { revision: current.revision + 1, photos }; await writeLibrary(updated); return Response.json(updated);
     });
@@ -61,6 +64,7 @@ export async function POST(request: Request) {
         const existing = current.photos.find(photo => photo.id === replaceId && photo.collection === collection);
         if (!existing) throw new Error('Photo not found.');
         existing.imageUrl = imageUrl;
+        delete existing.crop;
       } else current.photos.push({ id: randomUUID(), collection, imageUrl, caption: file.name.replace(/\.[^.]+$/, '').slice(0, 500), alt: '', photoDate: null, included: false });
       current.revision++; await writeLibrary(current); return Response.json(current);
     });

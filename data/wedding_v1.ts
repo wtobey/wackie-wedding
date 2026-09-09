@@ -16,7 +16,7 @@ export const wedding = {
 export const weekendEvents = [
   { day: "Friday", date: "June 4, 2027", number: "04", name: "Welcome Party", location: "The Bandshell at Dawn Ranch", details: "", schedule: ["Dinner, drinks, and s’mores galore. We'll also be celebrating Nana's birthday! Additional details coming soon."], icon: "cheers" },
   { day: "Saturday", date: "June 5, 2027", number: "05", name: "Ceremony & Reception", location: "The Orchard at Dawn Ranch", details: "Dress code: Black-tie optional", schedule: ["The ceremony will take place in the late afternoon. Dinner & merriment to follow. There will be an onsite after party beginning at 10pm."], icon: "flower" },
-  { day: "Sunday", date: "June 6, 2027", number: "06", name: "Recovery Brunch", location: "The Kitchen Garden & Meadow at Dawn Ranch", details: "Dress code: Casual", schedule: ["Details coming soon.", "We know most folks will be heading home, so this will be a flexible event for those who'd like a bite before they hit the road."], icon: "coffee" },
+  { day: "Sunday", date: "June 6, 2027", number: "06", name: "Recovery Brunch", location: "The Meadow at Dawn Ranch", details: "Dress code: Casual", schedule: ["Details coming soon.", "We know most folks will be heading home, so this will be a flexible event for those who'd like a bite before they hit the road."], icon: "coffee" },
 ] as const;
 
 // Original supplied copy; preserve wording when reused across pages.
