@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
+import { useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import styles from "@/app/wedding_v1/wedding.module.css";
 
 // Intentionally a lightweight guest gate, not authentication or private photo storage.
@@ -52,13 +52,7 @@ const footerIllustrations: Record<string, string> = {
 export default function WeddingShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [admin, setAdmin] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
-  useEffect(() => {
-    const check = () => { fetch('/api/wedding/admin/session', { cache: 'no-store' }).then(response => response.json()).then(session => setAdmin(Boolean(session.admin))).catch(() => setAdmin(false)); };
-    check(); window.addEventListener('wedding-admin-change', check);
-    return () => window.removeEventListener('wedding-admin-change', check);
-  }, []);
   const unlocked = useSyncExternalStore(subscribe, readAccess, () => false);
   const fullHeightGallery = unlocked && pathname === "/wedding_v1/gallery";
   const [error, setError] = useState("");
@@ -74,7 +68,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       setSigningIn(true);
       try {
         const response = await fetch('/api/wedding/admin/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
-        if (response.ok) { setAccess(true); setAdmin(true); setError(''); router.push('/wedding_v1/admin'); return; }
+        if (response.ok) { setAccess(true); setError(''); router.push('/wedding_v1/admin'); return; }
         setError('Not quite! Try the password we shared with you.');
       } catch { setError('Could not sign in. Please try again.'); }
       finally { setSigningIn(false); }
@@ -109,7 +103,6 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
         <button className={styles.menuButton} onClick={() => setOpenMenuPath(menuOpen ? null : pathname)} aria-expanded={menuOpen} aria-controls="wedding-navigation">{menuOpen ? "Close −" : "Menu +"}</button>
         <nav id="wedding-navigation" aria-label="Wedding" className={`${styles.nav} ${menuOpen ? styles.navOpen : ""}`}>
           {navigation.map(([label, href]) => <Link key={href} href={href} aria-current={pathname === href ? "page" : undefined} onClick={() => setOpenMenuPath(null)}><span className={styles.navSizer} aria-hidden="true">{label}</span><span>{label}</span></Link>)}
-          {admin && <Link href="/wedding_v1/admin" aria-current={pathname === '/wedding_v1/admin' ? 'page' : undefined}><span className={styles.navSizer} aria-hidden="true">Admin</span><span>Admin</span></Link>}
           <button type="button" className={styles.rsvpNav} aria-haspopup="dialog" onClick={() => { setOpenMenuPath(null); rsvpDialog.current?.showModal(); }}>RSVP</button>
         </nav>
       </header>

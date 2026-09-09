@@ -14,12 +14,14 @@ export function exclusive<T>(operation: () => Promise<T>): Promise<T> {
 }
 function seedVenue(): ManagedPhoto[] {
   return [
-    ['/dawn-ranch-orchard.webp', 'The Orchard'],
+    ['/dawn-ranch-orchard.webp', 'Celebrate in the orchard'],
     ['/dawn-ranch-river.jpg', 'By the river'],
     [wedding.cabinPhoto, 'Wake up in a cozy cottage'],
     ['/dawn-ranch-camping.jpg', 'A little glamping'],
+    ['/wedding_v1-assets/venue-river-floating.jpeg', 'Float or paddle down the river'],
     ['/dawn-ranch-pool.jpg', 'Poolside among the redwoods'],
-  ].map(([imageUrl, caption], index) => ({ id: `venue-${index}`, imageUrl, caption, alt: caption, collection: 'venue', photoDate: null, included: true }));
+    ['/wedding_v1-assets/venue-fire-smores.jpg', 'Cozy up by the fire'],
+  ].map(([imageUrl, caption], index) => ({ id: `venue-${index}`, imageUrl, caption, alt: caption, collection: 'venue', photoDate: null, included: imageUrl !== '/dawn-ranch-river.jpg' }));
 }
 async function initialLibrary(): Promise<PhotoLibrary> {
   const photos = seedVenue();

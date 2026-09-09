@@ -709,7 +709,28 @@
 .site.site .faqContent h2 { color: #F1C166 !important; }
 .pageIntro.faqIntro { padding-top: clamp(28px, 4.39vw, 55px); padding-bottom: 27px; }
 .site.site .footer :is(.footerBrand, p) {
-  font: 400 25px/1.2 var(--font-main) !important;
+  font: 400 clamp(16px, 4.4vw, 25px)/1.2 var(--font-main) !important;
   color: var(--orange) !important;
-  letter-spacing: -.06em;
+  letter-spacing: .04em;
+  white-space: nowrap;
+  text-wrap: nowrap;
+}
+.footer.watercolorFooter { background: #F7D3C3; }
+
+@media (max-width: 760px) {
+  .stayGrid { padding-top: 16px; gap: 28px; }
+  .stayGrid > .photoBackdrop:first-child {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    justify-content: center;
+  }
+  .photoBackdrop > div {
+    width: min(100%, 360px);
+    flex: 0 1 360px;
+    margin: 0;
+    transform: none;
+  }
 }

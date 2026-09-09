@@ -7,6 +7,8 @@ import PhotoTimeline from "./PhotoTimeline";
 import styles from "@/app/wedding_v1/wedding.module.css";
 
 type GalleryState = { photos: TimelinePhoto[]; loading: boolean; error: boolean };
+// Illustrative fixtures stay out of the admin library and production gallery.
+const previewPhotos: TimelinePhoto[] = ["2019-04-12", "2020-08-22", "2021-02-14", "2021-11-08", "2022-06-04", "2023-09-17", "2024-03-09", "2025-07-26", "2026-08-30"].map((date, index) => ({ id: index + 1, imageUrl: "", photoDate: date, caption: `Sample memory ${index + 1}`, isPreview: true }));
 export default function WeddingGallery() {
   const [state, setState] = useState<GalleryState>({ photos: [], loading: true, error: false });
   const [attempt, setAttempt] = useState(0);
@@ -22,6 +24,7 @@ export default function WeddingGallery() {
   function retry() { setState({ photos: [], loading: true, error: false }); setAttempt(value => value + 1); }
 
   if (state.photos.length) return <PhotoTimeline photos={state.photos}/>;
+  if (process.env.NODE_ENV === "development" && !state.loading && !state.error) return <PhotoTimeline photos={previewPhotos}/>;
   return <>
     <div className={styles.galleryStatus} aria-live="polite">
       <h2>{state.loading ? "Gathering the years…" : state.error ? "The album needs a moment." : "More memories soon."}</h2>

@@ -1,6 +1,6 @@
 # Wedding photo manager
 
-Visit `/wedding_v1/admin`, or enter the admin password at the usual wedding welcome screen. The guest password still opens only the guest website. An Admin navigation link appears after admin sign-in.
+Visit `/wedding_v1/admin`, or enter the admin password at the usual wedding welcome screen. The guest password still opens only the guest website. The photo manager is accessed through its direct address and does not appear in the website navigation.
 
 The local generated password is in `ADMIN_ACCESS.local.md` (gitignored). Set `WEDDING_ADMIN_PASSWORD` to a unique value of at least 16 characters in the server environment. Never use a `NEXT_PUBLIC_` variable for it. Changing it revokes existing sessions. Sessions use signed HttpOnly, SameSite=Strict cookies and expire after eight hours; production requires HTTPS. All admin read/write endpoints check the session; mutation endpoints check Origin. A process-wide escalating login cooldown limits password guessing.
 

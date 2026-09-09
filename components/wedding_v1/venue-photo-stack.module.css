@@ -12,6 +12,9 @@
 .frame img { object-fit: cover; }
 .caption { display: block; min-height: 66px; padding: 20px 4px 24px; font: italic 17px/1.25 "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive; text-align: center; letter-spacing: .01em; }
 .hint { text-align: center; font-size: 12px; color: var(--muted); }
+@media (min-width: 761px) {
+  .album p.hint { color: var(--paper); }
+}
 .fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--orange); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @keyframes turnCard {
