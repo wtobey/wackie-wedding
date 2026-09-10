@@ -51,6 +51,8 @@ export async function POST(request: Request) {
   try {
     const form = await (await bounded(request, 4 * 1024 * 1024 + 65536)).formData();
     const file = form.get('file'); const collection = form.get('collection'); const replaceId = form.get('replaceId');
+    const photoDate = form.get('photoDate');
+    if (photoDate !== null && (typeof photoDate !== 'string' || photoTimestamp(photoDate) === null)) throw new Error('Please enter a valid photo date.');
     if (!(file instanceof File) || file.size > 4 * 1024 * 1024 || !['image/jpeg','image/png','image/webp'].includes(file.type)) throw new Error('Choose a JPG, PNG, or WebP image up to 4 MB.');
     if (collection !== 'gallery' && collection !== 'venue') throw new Error('Choose a photo collection.');
     const bytes = await sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 40000000 }).rotate().resize({ width: 2400, height: 2400, fit: 'inside', withoutEnlargement: true }).webp({ quality: 88 }).toBuffer();
@@ -64,8 +66,9 @@ export async function POST(request: Request) {
         const existing = current.photos.find(photo => photo.id === replaceId && photo.collection === collection);
         if (!existing) throw new Error('Photo not found.');
         existing.imageUrl = imageUrl;
+        existing.photoDate ??= photoDate as string | null;
         delete existing.crop;
-      } else current.photos.push({ id: randomUUID(), collection, imageUrl, caption: file.name.replace(/\.[^.]+$/, '').slice(0, 500), alt: '', photoDate: null, included: false });
+      } else current.photos.push({ id: randomUUID(), collection, imageUrl, caption: file.name.replace(/\.[^.]+$/, '').slice(0, 500), alt: '', photoDate: photoDate as string | null, included: false });
       current.revision++; await writeLibrary(current); return Response.json(current);
     });
   } catch (error) {

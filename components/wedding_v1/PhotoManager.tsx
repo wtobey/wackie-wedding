@@ -3,6 +3,7 @@ import { adminRequest as api } from '@/lib/wedding-admin/client';
 import { cropStyle, defaultCrop } from '@/lib/wedding-admin/crop';
 import { sortGalleryByDate } from '@/lib/wedding-admin/sort';
 import { photoAccept, preparePhotoUpload } from '@/lib/wedding-admin/prepare-upload';
+import { readPhotoDate } from '@/lib/wedding-admin/photo-date';
 import Image from 'next/image';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { ManagedPhoto, PhotoCollection, PhotoLibrary } from '@/lib/wedding-admin/types';
@@ -82,9 +83,11 @@ export default function PhotoManager() {
     try {
       for (const file of selectedFiles) {
         setMessage(`Preparing photo ${completed + 1} of ${selectedFiles.length}: ${file.name}`);
+        const photoDate = await readPhotoDate(file);
         const prepared = await preparePhotoUpload(file);
         setMessage(`Uploading photo ${completed + 1} of ${selectedFiles.length}: ${file.name}`);
         const form = new FormData(); form.set('file', prepared); form.set('collection', collection); if (replaceId) form.set('replaceId', replaceId);
+        if (photoDate) form.set('photoDate', photoDate);
         const data = await api('/api/wedding/admin/photos', { method: 'POST', body: form }, 60000); setLibrary(data); completed++;
       }
       setMessage(replaceId ? 'Photo replaced.' : `${completed} photo(s) uploaded. Mark them included and save when ready.`);
