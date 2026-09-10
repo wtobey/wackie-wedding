@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import sharp from 'sharp';
 import type { ManagedPhoto } from './types';
 
 export const uploadBucket = 'wedding-uploads';
@@ -40,6 +39,7 @@ export function storagePaths(name: string) {
 }
 
 export async function saveStorageMedia(name: string, bytes: Buffer) {
+  const { default: sharp } = await import('sharp');
   await ensureBucket();
   const paths = storagePaths(name);
   const previews = await Promise.all([880, 440].map(edge => sharp(bytes).rotate()
