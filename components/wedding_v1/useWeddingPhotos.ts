@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPhotoPicker } from '@/lib/wedding-photo-picker';
 import type { ManagedPhoto } from '@/lib/wedding-admin/types';
 export function useWeddingPhotos() {
   const [photos, setPhotos] = useState<ManagedPhoto[]>([]);
@@ -8,6 +9,6 @@ export function useWeddingPhotos() {
     fetch('/api/wedding/photos?collection=gallery', { signal: controller.signal, cache: 'no-store' }).then(async response => { if (!response.ok) throw new Error('Unavailable'); return response.json(); }).then(setPhotos).catch(() => {});
     return () => controller.abort();
   }, []);
-  const getRandomImage = useCallback(() => photos.length ? photos[Math.floor(Math.random() * photos.length)] : null, [photos]);
+  const getRandomImage = useMemo(() => createPhotoPicker(photos), [photos]);
   return { getRandomImage, hasImages: photos.length > 0 };
 }

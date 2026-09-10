@@ -43,24 +43,30 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
     const loading = new Set<HTMLImageElement>();
     let cancelled = false;
     function fillQueue() {
-      while (!cancelled && queue.length + loading.size < 2) {
+      while (!cancelled && queue.length < 2) {
         const photo = getRandomImage();
         if (!photo) return;
         const src = photo.smallUrl ?? previewSource(photo.imageUrl);
         const { props } = getImageProps({ src, alt: '', fill: true, sizes: photoSizes, unoptimized: directImage(src) });
         const image = new window.Image();
+        const entry = { photo, image };
+        // Reserve the shuffled order before loading; fast downloads cannot jump
+        // ahead of slower photos. FallingPhoto still waits for decoding.
+        queue.push(entry);
         loading.add(image);
         image.fetchPriority = 'low';
         if (props.sizes) image.sizes = props.sizes;
         if (props.srcSet) image.srcset = props.srcSet;
         image.src = props.src;
-        void image.decode().then(() => {
-          if (!cancelled) queue.push({ photo, image });
-        }).catch(() => { /* Skip broken previews; later drops can try another. */ })
+        void image.decode().catch(() => {
+          const index = queue.indexOf(entry);
+          if (index >= 0) queue.splice(index, 1);
+        })
           .finally(() => loading.delete(image));
       }
     }
     takePrepared.current = () => {
+      fillQueue();
       const next = queue.shift();
       fillQueue();
       return next?.photo ?? getRandomImage();
