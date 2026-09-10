@@ -1,35 +1,46 @@
 'use client';
+import { adminRequest as api } from '@/lib/wedding-admin/client';
 import { cropStyle, defaultCrop } from '@/lib/wedding-admin/crop';
 import Image from 'next/image';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { ManagedPhoto, PhotoCollection, PhotoLibrary } from '@/lib/wedding-admin/types';
 import styles from './photo-manager.module.css';
 
-async function api(url: string, options?: RequestInit) {
-  const response = await fetch(url, { cache: 'no-store', ...options });
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(body.error || (response.status === 401 ? 'Your admin session expired. Sign in again.' : 'Something went wrong. Please retry.'));
-  return body;
-}
 export default function PhotoManager() {
   const [library, setLibrary] = useState<PhotoLibrary | null>(null);
   const [collection, setCollection] = useState<PhotoCollection>('gallery');
   const [authorized, setAuthorized] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [sessionAttempt, setSessionAttempt] = useState(0);
+  const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const load = useCallback(async () => {
-    setError('');
-    try { const data = await api('/api/wedding/admin/photos'); setLibrary(data); setDirty(false); }
-    catch (error) { setError((error as Error).message); }
+  const load = useCallback(async (signal?: AbortSignal) => {
+    setError(''); setLoadingLibrary(true);
+    try {
+      const data = await api('/api/wedding/admin/photos', { signal });
+      if (!signal?.aborted) { setLibrary(data); setDirty(false); }
+    } catch (error) {
+      if (!signal?.aborted) setError((error as Error).message);
+    } finally { if (!signal?.aborted) setLoadingLibrary(false); }
   }, []);
   useEffect(() => {
-    let active = true;
-    api('/api/wedding/admin/session').then(async session => { if (!active) return; setAuthorized(session.admin); if (session.admin) await load(); }).catch(() => { if (active) setError('Could not check your session. Please refresh.'); }).finally(() => { if (active) setChecking(false); });
-    return () => { active = false; };
-  }, [load]);
+    const controller = new AbortController();
+    api('/api/wedding/admin/session', { signal: controller.signal }, 10000)
+      .then(session => {
+        if (controller.signal.aborted) return;
+        setAuthorized(Boolean(session.admin));
+        // Access is resolved even if the separate photo request is slow.
+        setChecking(false);
+        if (session.admin) void load(controller.signal);
+      })
+      .catch((error: Error) => {
+        if (!controller.signal.aborted) { setError(error.message); setChecking(false); }
+      });
+    return () => controller.abort();
+  }, [load, sessionAttempt]);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => { if (dirty || busy) { event.preventDefault(); event.returnValue = ''; } };
     window.addEventListener('beforeunload', warn); return () => window.removeEventListener('beforeunload', warn);
@@ -63,26 +74,26 @@ export default function PhotoManager() {
       for (const file of Array.from(files)) {
         if (file.size > 4 * 1024 * 1024) throw new Error("Choose an image up to 4 MB.");
         const form = new FormData(); form.set('file', file); form.set('collection', collection); if (replaceId) form.set('replaceId', replaceId);
-        const data = await api('/api/wedding/admin/photos', { method: 'POST', body: form }); setLibrary(data); completed++;
+        const data = await api('/api/wedding/admin/photos', { method: 'POST', body: form }, 60000); setLibrary(data); completed++;
       }
       setMessage(replaceId ? 'Photo replaced.' : `${completed} photo(s) uploaded. Mark them included and save when ready.`);
     } catch (error) { setError(`${completed ? `${completed} uploaded. ` : ''}${(error as Error).message}`); } finally { setBusy(false); }
   }
   if (checking) return <div className={styles.manager}>Checking admin access…</div>;
-  if (!authorized) return <div className={styles.manager}><h1>Admin sign in</h1><p>Use your separate admin password to manage the photo collection.</p><form onSubmit={login}><label>Admin password<input name="password" type="password" autoComplete="current-password" required/></label><button disabled={busy}>Sign in</button></form>{error && <p role="alert">{error}</p>}</div>;
+  if (!authorized) return <div className={styles.manager}><h1>Admin sign in</h1><p>Use your separate admin password to manage the photo collection.</p><form onSubmit={login}><label>Admin password<input name="password" type="password" autoComplete="current-password" required/></label><button disabled={busy}>Sign in</button></form>{error && <><p role="alert">{error}</p><button type="button" disabled={busy} onClick={() => { setChecking(true); setError(''); setSessionAttempt(value => value + 1); }}>Retry access check</button></>}</div>;
   const photos = library?.photos.filter(photo => photo.collection === collection) || [];
   return <div className={styles.manager}>
     <header className={styles.heading}><div><p>ADMIN ONLY</p><h1>Photo manager</h1><p>Edit your memories, then save to update the website.</p></div><button disabled={busy || dirty} onClick={async () => { try { await api('/api/wedding/admin/session', { method: 'DELETE' }); setAuthorized(false); setLibrary(null); window.dispatchEvent(new Event('wedding-admin-change')); } catch { setError('Could not sign out. Please retry.'); } }}>Sign out</button></header>
     <div className={styles.toolbar}>
       <div className={styles.tabs}><button aria-pressed={collection === 'gallery'} onClick={() => setCollection('gallery')}>Gallery photos</button><button aria-pressed={collection === 'venue'} onClick={() => setCollection('venue')}>Dawn Ranch photos</button></div>
       <button disabled={!dirty || busy} onClick={save}>{busy ? 'Working…' : 'Save changes'}</button>
-      <button disabled={busy} onClick={() => { if (!dirty || window.confirm('Discard unsaved changes and reload?')) void load(); }}>Reload</button>
+      <button disabled={busy || loadingLibrary} onClick={() => { if (!dirty || window.confirm('Discard unsaved changes and reload?')) void load(); }}>{loadingLibrary ? 'Loading photos…' : 'Reload'}</button>
       <span>{dirty ? 'Unsaved changes' : `${photos.length} photos · ${photos.filter(photo => photo.included).length} included`}</span>
     </div>
     <p>Use the arrows to arrange photos. Dates label the gallery timeline; undated photos appear at the end. Excluded photos stay in this manager.</p>
     <label className={styles.upload}>Upload photos<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={busy || dirty || !library} onChange={event => { void upload(event.target.files); event.target.value = ''; }}/><span>JPG, PNG or WebP · up to 4 MB each{dirty ? ' · Save your edits before uploading or replacing photos.' : ''}</span></label>
     {error && <p className={styles.error} role="alert">{error}</p>}{message && <p role="status">{message}</p>}
-    {!library ? <p>The library has not loaded. Use Reload to try again.</p> : !photos.length ? <p>No photos in this collection yet. Upload your first memory above.</p> : <div className={styles.photos}>{photos.map((photo, index) => <article className={styles.photo} key={photo.id}>
+    {!library ? <p role="status">{loadingLibrary ? 'Loading your photo library…' : 'The library has not loaded. Use Reload to try again.'}</p> : !photos.length ? <p>No photos in this collection yet. Upload your first memory above.</p> : <div className={styles.photos}>{photos.map((photo, index) => <article className={styles.photo} key={photo.id}>
       <div>
         <div className={styles.preview} data-collection={photo.collection}><Image style={cropStyle(photo.crop)} src={photo.imageUrl} alt={photo.alt || photo.caption || 'Photo preview'} fill unoptimized sizes="240px"/></div>
         <details className={styles.cropControls}><summary>Adjust crop</summary>
