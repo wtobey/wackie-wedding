@@ -1,5 +1,10 @@
 .galleryPage { position: relative; width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; padding-bottom: 20px; }
 .viewer { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+/* Keep the scroll viewport fixed beneath the overlaid header. Padding scrolls
+   away with the cards instead of resizing their viewport during collapse. */
+.viewer .gridScroll { padding-top: calc(var(--header-expanded-height) + 48px); }
+.viewer .album { padding-top: var(--header-expanded-height); }
+.viewer .viewControls { top: calc(var(--header-expanded-height) + 12px); }
 .viewContent { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .viewControls { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: min(1120px, calc(100% - 48px)); display: flex; justify-content: flex-end; pointer-events: none; z-index: 5; }
 .viewToggle { flex: 0 0 44px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--paper, #faf9f7); color: #947b69; cursor: pointer; pointer-events: auto; }

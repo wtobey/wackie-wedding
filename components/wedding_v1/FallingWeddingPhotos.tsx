@@ -7,6 +7,21 @@ import styles from "@/app/wedding_v1/wedding.module.css";
 
 type DroppedPhoto = { id: number; src: string; caption: string; x: number; y: number; angle: number };
 
+function FallingPhoto({ photo, onReady, onError }: { photo: DroppedPhoto; onReady: (id: number) => void; onError: (id: number) => void }) {
+  const [ready, setReady] = useState(false);
+  const started = useRef(false);
+  return <figure className={styles.droppedPhoto} data-ready={ready} style={{ left: photo.x, top: photo.y, "--photo-angle": `${photo.angle}deg` } as CSSProperties}>
+    <div><Image src={photo.src} alt="" fill loading="eager" sizes="(max-width: 600px) 110px, 144px" unoptimized={photo.src.startsWith('/api/')} onLoad={async event => {
+      const image = event.currentTarget;
+      try { await image.decode(); } catch { if (image.isConnected) onError(photo.id); return; }
+      if (!image.isConnected || started.current) return;
+      started.current = true;
+      setReady(true);
+      onReady(photo.id);
+    }} onError={() => onError(photo.id)}/></div><figcaption>{photo.caption}</figcaption>
+  </figure>;
+}
+
 export default function FallingWeddingPhotos({ children }: { children: ReactNode }) {
   const stage = useRef<HTMLElement>(null);
   const nextId = useRef(0);
@@ -36,9 +51,17 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
     const src = image.imageUrl.startsWith('/api/wedding/media/') ? `${image.imageUrl}?size=small` : image.imageUrl;
     const photo = { id, src, caption: image.caption || "Will + Jackie", x, y, angle: Math.random() * 24 - 12 };
     setPhotos(previous => [...previous.slice(-5), photo]);
+  }, [getRandomImage]);
+
+  const removePhoto = useCallback((id: number) => {
+    setPhotos(previous => previous.filter(item => item.id !== id));
+  }, []);
+
+  const startLifetime = useCallback((id: number) => {
+    // Loading time must not consume the fall animation or the visible lifetime.
     const timer = setTimeout(() => { setPhotos(previous => previous.filter(item => item.id !== id)); timers.current.delete(timer); }, 14000);
     timers.current.add(timer);
-  }, [getRandomImage]);
+  }, []);
 
   useEffect(() => {
     const pending = timers.current;
@@ -63,9 +86,7 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
 
   return <section ref={stage} className={styles.hero} onClick={handleClick} aria-labelledby="welcome-title">
     {children}
-    <div className={styles.droppedPhotos} aria-hidden="true">{photos.map(photo => <figure key={photo.id} className={styles.droppedPhoto} style={{ left: photo.x, top: photo.y, "--photo-angle": `${photo.angle}deg` } as CSSProperties}>
-      <div><Image src={photo.src} alt="" fill sizes="(max-width: 600px) 110px, 144px" unoptimized={photo.src.startsWith('/api/')} onError={() => setPhotos(previous => previous.filter(item => item.id !== photo.id))}/></div><figcaption>{photo.caption}</figcaption>
-    </figure>)}</div>
+    <div className={styles.droppedPhotos} aria-hidden="true">{photos.map(photo => <FallingPhoto key={photo.id} photo={photo} onReady={startLifetime} onError={removePhoto}/>)}</div>
     <button className={styles.dropPhotoHint} disabled={!hasImages} onClick={() => drop()}>Click or tap to drop a photo.</button>
   </section>;
 }
