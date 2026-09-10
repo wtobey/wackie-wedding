@@ -73,9 +73,7 @@ function PhotoDialog({ photos, initialIndex, onClose }: { photos: TimelinePhoto[
 
 export default function PhotoTimeline({ photos }: { photos: TimelinePhoto[] }) {
   const [view, setView] = useState<"timeline" | "grid">("timeline");
-  const { dated, undated } = useMemo(() => groupTimelinePhotos(photos), [photos]);
-  const allPhotos = useMemo(() => [...dated, ...undated], [dated, undated]);
-  const sequence = dated.length ? dated : undated;
+  const { dated: sequence } = useMemo(() => groupTimelinePhotos(photos), [photos]);
   if (!sequence.length) return null;
   const toggleLabel = view === "timeline" ? "Switch to gallery grid" : "Switch to timeline";
   const viewToggle = <button type="button" className={timeline.viewToggle} aria-label={toggleLabel} title={toggleLabel} aria-controls="wedding-photo-view" onClick={() => { const next = view === "timeline" ? "grid" : "timeline"; trackWeddingEvent("gallery_view_changed", next); setView(next); }}>
@@ -86,7 +84,7 @@ export default function PhotoTimeline({ photos }: { photos: TimelinePhoto[] }) {
   return <div className={timeline.viewer}>
     <div className={timeline.viewControls}>{viewToggle}</div>
     <div id="wedding-photo-view" className={timeline.viewContent}>
-      {view === "timeline" ? <TimelineAlbum sequence={sequence} undated={dated.length ? undated : []}/> : <PhotoGrid photos={allPhotos}/>}
+      {view === "timeline" ? <TimelineAlbum sequence={sequence}/> : <PhotoGrid photos={sequence}/>}
     </div>
   </div>;
 }
@@ -104,7 +102,7 @@ function PhotoGrid({ photos }: { photos: TimelinePhoto[] }) {
   </>;
 }
 
-function TimelineAlbum({ sequence, undated }: { sequence: TimelinePhoto[]; undated: TimelinePhoto[] }) {
+function TimelineAlbum({ sequence }: { sequence: TimelinePhoto[] }) {
   const rail = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLOListElement>(null);
   const scrubber = useRef<HTMLInputElement>(null);
@@ -124,7 +122,6 @@ function TimelineAlbum({ sequence, undated }: { sequence: TimelinePhoto[]; undat
   // The opening story is the first timeline stop, followed by the photos.
   const stopCount = sequence.length + 1;
   const playing = !reducedMotion && selected === null && stopCount > 1;
-  const allPhotos = useMemo(() => [...sequence, ...undated], [sequence, undated]);
 
   const updateActive = useCallback((offset: number) => {
     const next = nearestPhotoIndex(offset, geometry.current.stride, stopCount);
@@ -272,7 +269,6 @@ function TimelineAlbum({ sequence, undated }: { sequence: TimelinePhoto[]; undat
         }}/>
       </div>
     </section>
-    {undated.length > 0 && <details className={timeline.undated}><summary>More memories ({undated.length})</summary><div className={styles.galleryGrid}>{undated.map((photo, index) => <button className={`${styles.polaroid} ${styles.galleryPhoto}`} key={photo.id} onClick={() => openPhoto(sequence.length + index)} aria-label={`Open additional photo ${index + 1}`}><div className={styles.photoFrame}><Photo photo={photo}/></div><span className={styles.galleryCaption}>{photo.caption?.trim() || photoDateLabel(photo.photoDate)}</span></button>)}</div></details>}
-    {selected !== null && <PhotoDialog photos={allPhotos} initialIndex={selected} onClose={() => setSelected(null)}/>}
+    {selected !== null && <PhotoDialog photos={sequence} initialIndex={selected} onClose={() => setSelected(null)}/>}
   </div>;
 }

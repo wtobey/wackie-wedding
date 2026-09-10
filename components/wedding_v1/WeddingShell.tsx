@@ -5,20 +5,17 @@ import WeddingAnalytics from "./WeddingAnalytics";
 import { trackWeddingEvent } from "@/lib/analytics/client";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import styles from "@/app/wedding_v1/wedding.module.css";
 
 // Intentionally a lightweight guest gate, not authentication or private photo storage.
 const PASSWORD = process.env.NEXT_PUBLIC_WEDDING_PASSWORD || "getwackie";
 const STORAGE_KEY = "wackie-wedding-access";
 const ACCESS_EVENT = "wackie-access-change";
-function subscribeScroll(listener: () => void) {
-  window.addEventListener('scroll', listener, { capture: true, passive: true });
-  return () => window.removeEventListener('scroll', listener, true);
-}
-function readCompactHeader() {
+function readHeaderProgress() {
   const panels = document.querySelectorAll('#wedding-main, [data-photo-scroll]');
-  return Math.max(window.scrollY, document.body.scrollTop, document.documentElement.scrollTop, ...Array.from(panels, panel => panel.scrollTop)) > 80;
+  const offset = Math.max(window.scrollY, document.body.scrollTop, document.documentElement.scrollTop, ...Array.from(panels, panel => panel.scrollTop));
+  return Math.min(1, Math.max(0, offset / 120));
 }
 let memoryAccess = false;
 function readAccess() {
@@ -64,7 +61,30 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [signingIn, setSigningIn] = useState(false);
   const unlocked = useSyncExternalStore(subscribe, readAccess, () => false);
-  const compactHeader = useSyncExternalStore(subscribeScroll, readCompactHeader, () => false);
+  const headerRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    let frame = 0;
+    let previous = -1;
+    const update = () => {
+      frame = 0;
+      const progress = readHeaderProgress();
+      if (progress === previous) return;
+      previous = progress;
+      // Scroll animation stays outside React's render cycle.
+      header.style.setProperty('--header-progress', String(progress));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll, true);
+      cancelAnimationFrame(frame);
+    };
+  }, [pathname, unlocked]);
   const fullHeightGallery = unlocked && pathname === "/gallery";
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -112,7 +132,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
     </main> : <>
       <a className={styles.skipLink} href="#wedding-main">Skip to content</a>
       <div className={styles.headerSpace}>
-      <header className={`${styles.header} ${styles.pinnedHeader}`} data-compact={compactHeader}>
+      <header ref={headerRef} className={`${styles.header} ${styles.pinnedHeader}`}>
         <Link href="/" className={styles.brand} aria-label="Will and Jackie wedding home"><span className={styles.brandIcon} aria-hidden="true"/><span>Will + Jackie</span></Link>
         <button className={styles.menuButton} onClick={() => setOpenMenuPath(menuOpen ? null : pathname)} aria-expanded={menuOpen} aria-controls="wedding-navigation">{menuOpen ? "Close −" : "Menu +"}</button>
         <nav id="wedding-navigation" aria-label="Wedding" className={`${styles.nav} ${menuOpen ? styles.navOpen : ""}`}>

@@ -31,9 +31,6 @@
 .scrubber input::-moz-range-track { height: 2px; background: var(--seeker-track); }
 .scrubber input::-moz-range-progress { height: 2px; background: var(--seeker-ink); }
 .scrubber input::-moz-range-thumb { width: 8px; height: 8px; border: 3px solid var(--paper, #faf9f7); border-radius: 50%; background: var(--seeker-ink); box-shadow: 0 0 0 1px var(--seeker-ink); }
-.undated { flex-shrink: 0; max-height: 30%; overflow: auto; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
-.undated summary { color: var(--orange); cursor: pointer; font-size: 20px; }
-.undated > div { margin-top: 24px; }
 .samplePhoto { position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; background: var(--peach-panel, #fed1c4); color: #995106; }
 .samplePhoto[data-tone="1"] { background: #f2dfb8; }
 .samplePhoto[data-tone="2"] { background: #e5c9b9; }

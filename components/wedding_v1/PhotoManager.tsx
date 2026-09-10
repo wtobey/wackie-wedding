@@ -105,7 +105,7 @@ export default function PhotoManager() {
       <button disabled={busy || loadingLibrary} onClick={() => { if (!dirty || window.confirm('Discard unsaved changes and reload?')) void load(); }}>{loadingLibrary ? 'Loading photos…' : 'Reload'}</button>
       <span>{dirty ? 'Unsaved changes' : `${photos.length} photos · ${photos.filter(photo => photo.included).length} included`}</span>
     </div>
-    <p>Use the arrows to arrange photos. Dates label the gallery timeline; undated photos appear at the end. Excluded photos stay in this manager.</p>
+    <p>Use the arrows to arrange photos. Only photos with a date appear in the gallery. Undated photos stay in this manager. Excluded photos stay in this manager.</p>
     <label className={styles.upload}>Upload photos<input type="file" accept={photoAccept} multiple disabled={busy || dirty || !library} onChange={event => { void upload(event.target.files); event.target.value = ''; }}/><span>JPG, PNG, WebP or iPhone HEIC · Large photos are resized automatically. Originals on your device stay unchanged.{dirty ? ' · Save your edits before uploading or replacing photos.' : ''}</span></label>
     {error && <p className={styles.error} role="alert">{error}</p>}{message && <p role="status">{message}</p>}
     {!library ? <p role="status">{loadingLibrary ? 'Loading your photo library…' : 'The library has not loaded. Use Reload to try again.'}</p> : !photos.length ? <p>No photos in this collection yet. Upload your first memory above.</p> : <div className={styles.photos}>{photos.map((photo, index) => <article className={styles.photo} key={photo.id}>
