@@ -1,10 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [{ source: '/wedding_v1/:path*', destination: '/:path*', permanent: true }];
+  },
   images: {
-    remotePatterns: process.env.NEXT_PUBLIC_SUPABASE_URL
-      ? [new URL(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/**`)]
-      : [],
+    remotePatterns: [
+      new URL("https://dawnranch.com/wp-content/uploads/**"),
+      ...(process.env.NEXT_PUBLIC_SUPABASE_URL ? [new URL(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/**`)] : []),
+    ],
   },
   // Sharp's dynamically loaded Linux libraries are required by the upload route.
   outputFileTracingIncludes: {

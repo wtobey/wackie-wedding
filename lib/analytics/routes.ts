@@ -1,12 +1,12 @@
 const guestPaths = new Set([
-  '/wedding_v1', '/wedding_v1/our-wedding', '/wedding_v1/accommodations',
-  '/wedding_v1/transportation', '/wedding_v1/plan-your-trip',
-  '/wedding_v1/gallery', '/wedding_v1/faq', '/wedding_v1/registry',
+  '/', '/our-wedding', '/accommodations',
+  '/transportation', '/plan-your-trip',
+  '/gallery', '/faq', '/registry',
 ]);
 
 export function analyticsPath(pathname: string, unlocked: boolean): string | null {
   if (!guestPaths.has(pathname)) return null;
-  return unlocked ? pathname : '/wedding_v1/access';
+  return unlocked ? pathname : '/access';
 }
 
 export function analyticsAllowed(environment: string | undefined, hostname: string): boolean {

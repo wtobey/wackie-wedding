@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import TripCarousel from "@/components/wedding_v1/TripCarousel";
-import styles from "../wedding.module.css";
+import styles from "@/app/wedding_v1/wedding.module.css";
 
 export const metadata: Metadata = { title: "Plan your trip" };
 

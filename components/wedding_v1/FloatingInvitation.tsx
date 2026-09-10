@@ -63,7 +63,7 @@ export default function FloatingInvitation() {
   return <div className={styles.stage} data-photo-exclusion>
     <h1 id="welcome-title" className={styles.srOnly}>Jackie Tait &amp; Will Tobey are getting married</h1>
     <div ref={card} className={styles.card}>
-    <Link className={styles.invitationLink} href="/wedding_v1/our-wedding" aria-label="View the wedding itinerary">
+    <Link className={styles.invitationLink} href="/our-wedding" aria-label="View the wedding itinerary">
       <Image className={styles.artwork} src="/wedding_v1-assets/wedding-save-the-date-ffa93f-e5680a.svg" width={800} height={800} unoptimized alt="Save the date: Jackie Tait and Will Tobey, June 5th, 2027, Sonoma County, California. A river and kayaker framed by two redwood trees." sizes="(max-width: 600px) 84vw, (max-height: 900px) 70vh, 700px" preload draggable={false}/>
     </Link>
     </div>

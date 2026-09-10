@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { weddingFaqs } from "@/data/wedding_v1";
-import styles from "../wedding.module.css";
+import styles from "@/app/wedding_v1/wedding.module.css";
 
 export const metadata: Metadata = { title: "FAQ" };
 

@@ -21,7 +21,7 @@ are excluded. No subscription upgrade is required by this integration.
 
 ## Events
 
-- `$pageview`: guest screens and the virtual `/wedding_v1/access` password screen.
+- `$pageview`: guest screens and the virtual `/access` password screen.
 - `guest_access_granted`: successful guest password entry (no password recorded).
 - `rsvp_opened`: opens the current RSVP information dialog, not an RSVP submission.
 - `registry_clicked`: opens Williams Sonoma.

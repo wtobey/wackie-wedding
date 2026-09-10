@@ -6,21 +6,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./venue-photo-stack.module.css";
 
 
-function StackPhoto({ src, alt, crop }: { src: string; alt: string; crop?: PhotoCrop }) {
+type VenuePhoto = { src: string; alt: string; caption: string; crop?: PhotoCrop };
+
+function StackPhoto({ src, alt, crop, front, onReady }: VenuePhoto & { front: boolean; onReady: () => void }) {
   const [failed, setFailed] = useState(false);
-  return failed ? <span className={styles.fallback}>Dawn Ranch</span> : <Image style={cropStyle(crop)} src={src} alt={alt} fill sizes="(max-width: 760px) 80vw, 480px" loading="eager" unoptimized={src.startsWith("http") || src.startsWith("/api/")} onError={() => setFailed(true)}/>;
+  return failed ? <span className={styles.fallback}>Dawn Ranch</span> : <Image style={cropStyle(crop)} src={src} alt={alt} fill sizes="(max-width: 760px) 80vw, 400px" loading="eager" fetchPriority={front ? "high" : "low"} unoptimized={src.startsWith("/api/") || (src.startsWith("http") && !src.startsWith("https://dawnranch.com/"))} onLoad={onReady} onError={() => { setFailed(true); onReady(); }}/>;
 }
 
-export default function VenuePhotoStack() {
-  const [photos, setPhotos] = useState<{ src: string; alt: string; caption: string; crop?: PhotoCrop }[]>([]);
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch('/api/wedding/photos?collection=venue', { signal: controller.signal, cache: 'no-store' })
-      .then(async response => { if (!response.ok) throw new Error('Unavailable'); return response.json(); })
-      .then((rows: { imageUrl: string; alt: string; caption: string; crop?: PhotoCrop }[]) => setPhotos(rows.map(photo => ({ src: photo.imageUrl, alt: photo.alt || photo.caption, caption: photo.caption, crop: photo.crop }))))
-      .catch(() => {});
-    return () => controller.abort();
-  }, []);
+export default function VenuePhotoStack({ photos }: { photos: VenuePhoto[] }) {
+  const [ready, setReady] = useState<Record<string, boolean>>({});
   const [current, setCurrent] = useState(0);
   const [flipping, setFlipping] = useState(false);
   const busy = useRef(false);
@@ -53,7 +47,7 @@ export default function VenuePhotoStack() {
       {photos.map((photo, index) => {
         const depth = (index - current + photos.length) % photos.length;
         return <span key={photo.src} className={styles.card} data-depth={depth} aria-hidden={depth !== 0} onAnimationEnd={event => { if (depth === 0 && event.target === event.currentTarget) finishFlip(); }}>
-          <span className={styles.frame}><StackPhoto src={photo.src} alt={photo.alt} crop={photo.crop}/></span>
+          <span className={styles.frame}>{(depth === 0 || (depth <= 2 && ready[photos[current].src])) && <StackPhoto {...photo} front={depth === 0} onReady={() => setReady(previous => previous[photo.src] ? previous : { ...previous, [photo.src]: true })}/>}</span>
           <span className={styles.caption}>{photo.caption}</span>
         </span>;
       })}

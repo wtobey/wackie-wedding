@@ -31,24 +31,24 @@ function setAccess(value: boolean) {
   window.dispatchEvent(new Event(ACCESS_EVENT));
 }
 const navigation = [
-  ["Itinerary", "/wedding_v1/our-wedding"],
-  ["Accommodations", "/wedding_v1/accommodations"],
-  ["Travel", "/wedding_v1/transportation"],
-  ["Plan your trip", "/wedding_v1/plan-your-trip"],
-  ["Gallery", "/wedding_v1/gallery"],
-  ["FAQ", "/wedding_v1/faq"],
-  ["Registry", "/wedding_v1/registry"],
+  ["Itinerary", "/our-wedding"],
+  ["Accommodations", "/accommodations"],
+  ["Travel", "/transportation"],
+  ["Plan your trip", "/plan-your-trip"],
+  ["Gallery", "/gallery"],
+  ["FAQ", "/faq"],
+  ["Registry", "/registry"],
 ];
 
 const footerIllustrations: Record<string, string> = {
-  "/wedding_v1": "wedding-river-float.png",
-  "/wedding_v1/our-wedding": "footer-campfire-separate-logs.png",
-  "/wedding_v1/accommodations": "wedding-sun-loungers.png",
-  "/wedding_v1/transportation": "footer-morning-yoga.png",
-  "/wedding_v1/plan-your-trip": "footer-colonel-armstrong.png",
-  "/wedding_v1/gallery": "footer-california-poppies.png",
-  "/wedding_v1/faq": "footer-lawn-games.png",
-  "/wedding_v1/registry": "wedding-wine-picnic.png",
+  "/": "wedding-river-float.png",
+  "/our-wedding": "footer-campfire-separate-logs.png",
+  "/accommodations": "wedding-sun-loungers.png",
+  "/transportation": "footer-morning-yoga.png",
+  "/plan-your-trip": "footer-colonel-armstrong.png",
+  "/gallery": "footer-california-poppies.png",
+  "/faq": "footer-lawn-games.png",
+  "/registry": "wedding-wine-picnic.png",
 };
 
 export default function WeddingShell({ children }: { children: ReactNode }) {
@@ -56,7 +56,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [signingIn, setSigningIn] = useState(false);
   const unlocked = useSyncExternalStore(subscribe, readAccess, () => false);
-  const fullHeightGallery = unlocked && pathname === "/wedding_v1/gallery";
+  const fullHeightGallery = unlocked && pathname === "/gallery";
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [openMenuPath, setOpenMenuPath] = useState<string | null>(null);
@@ -70,7 +70,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       setSigningIn(true);
       try {
         const response = await fetch('/api/wedding/admin/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
-        if (response.ok) { setAccess(true); setError(''); router.push('/wedding_v1/admin'); return; }
+        if (response.ok) { setAccess(true); setError(''); router.push('/admin'); return; }
         setError('Not quite! Try the password we shared with you.');
       } catch { setError('Could not sign in. Please try again.'); }
       finally { setSigningIn(false); }
@@ -83,7 +83,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
 
   return <div className={`${styles.site} ${fullHeightGallery ? styles.gallerySite : ""}`}>
     <WeddingAnalytics pathname={pathname} unlocked={unlocked}/>
-    {!unlocked && pathname !== "/wedding_v1/admin" ? <main className={styles.gate}>
+    {!unlocked && pathname !== "/admin" ? <main className={styles.gate}>
       <Link href="/" className={styles.gateBrand}>Will + Jackie</Link>
       <div className={styles.gateCard}>
         <h1>Before we begin...</h1>
@@ -103,7 +103,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
     </main> : <>
       <a className={styles.skipLink} href="#wedding-main">Skip to content</a>
       <header className={styles.header}>
-        <Link href="/wedding_v1" className={styles.brand} aria-label="Will and Jackie wedding home"><span className={styles.brandIcon} aria-hidden="true"/><span>Will + Jackie</span></Link>
+        <Link href="/" className={styles.brand} aria-label="Will and Jackie wedding home"><span className={styles.brandIcon} aria-hidden="true"/><span>Will + Jackie</span></Link>
         <button className={styles.menuButton} onClick={() => setOpenMenuPath(menuOpen ? null : pathname)} aria-expanded={menuOpen} aria-controls="wedding-navigation">{menuOpen ? "Close −" : "Menu +"}</button>
         <nav id="wedding-navigation" aria-label="Wedding" className={`${styles.nav} ${menuOpen ? styles.navOpen : ""}`}>
           {navigation.map(([label, href]) => <Link key={href} href={href} aria-current={pathname === href ? "page" : undefined} onClick={() => setOpenMenuPath(null)}><span className={styles.navSizer} aria-hidden="true">{label}</span><span>{label}</span></Link>)}
@@ -122,7 +122,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
         <div className={styles.footerArtwork} aria-hidden="true">
           <Image src={`/wedding_v1-assets/${footerIllustrations[pathname] ?? "wedding-river-float.png"}`} alt="" width={1536} height={1024} sizes="280px" />
         </div>
-        <Link href="/wedding_v1" className={styles.footerBrand}>Will + Jackie</Link>
+        <Link href="/" className={styles.footerBrand}>Will + Jackie</Link>
         <p>June 5, 2027</p>
       </footer>
     </>}

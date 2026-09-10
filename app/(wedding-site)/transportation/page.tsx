@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageIntro, NextPage } from "@/components/wedding_v1/WeddingContent";
 import { wedding, weddingTravel } from "@/data/wedding_v1";
-import styles from "../wedding.module.css";
+import styles from "@/app/wedding_v1/wedding.module.css";
 
 export const metadata: Metadata = { title: "Travel" };
 export default function Transportation() {
@@ -37,6 +37,6 @@ export default function Transportation() {
         <section><h2>Parking at Dawn Ranch</h2><p>If you’re planning to rent a car or drive to the venue, there is parking available onsite for guests.</p><a className={styles.textLink} data-wedding-event="directions_clicked" href={wedding.mapsUrl} target="_blank" rel="noreferrer">Directions to Dawn Ranch</a></section>
       </div>
     </div>
-    <NextPage href="/wedding_v1/plan-your-trip" label="Turn the weekend into a getaway" showEyebrow={false}/>
+    <NextPage href="/plan-your-trip" label="Turn the weekend into a getaway" showEyebrow={false}/>
   </div>;
 }
