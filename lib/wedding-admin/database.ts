@@ -57,9 +57,10 @@ export async function saveDatabaseLibrary(library: PhotoLibrary) {
   if (!rows.length) throw new LibraryConflict();
   });
 }
-export async function saveDatabaseMedia(name: string, bytes: Buffer) {
+export async function listDatabaseMedia() {
   return withDatabase(async db => {
-  await db`INSERT INTO wedding_admin.media (name, bytes) VALUES (${name}, ${bytes})`;
+    const rows = await db`SELECT name, octet_length(bytes) AS size FROM wedding_admin.media ORDER BY name`;
+    return rows.map(row => ({ name: row.name as string, size: row.size as number }));
   });
 }
 export async function readDatabaseMedia(name: string): Promise<Buffer> {

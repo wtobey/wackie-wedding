@@ -1,17 +1,24 @@
 "use client";
 
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { useWeddingPhotos } from "./useWeddingPhotos";
 import styles from "@/app/wedding_v1/wedding.module.css";
 
 type DroppedPhoto = { id: number; src: string; caption: string; x: number; y: number; angle: number };
+const photoSizes = '(max-width: 600px) 110px, 144px';
+function previewSource(src: string) {
+  return src.startsWith('/api/wedding/media/') ? `${src}?size=small` : src;
+}
+function directImage(src: string) {
+  return src.startsWith('/api/') || src.includes('/storage/v1/object/sign/');
+}
 
 function FallingPhoto({ photo, onReady, onError }: { photo: DroppedPhoto; onReady: (id: number) => void; onError: (id: number) => void }) {
   const [ready, setReady] = useState(false);
   const started = useRef(false);
   return <figure className={styles.droppedPhoto} data-ready={ready} style={{ left: photo.x, top: photo.y, "--photo-angle": `${photo.angle}deg` } as CSSProperties}>
-    <div><Image src={photo.src} alt="" fill loading="eager" sizes="(max-width: 600px) 110px, 144px" unoptimized={photo.src.startsWith('/api/')} onLoad={async event => {
+    <div><Image src={photo.src} alt="" fill loading="eager" sizes={photoSizes} unoptimized={directImage(photo.src)} onLoad={async event => {
       const image = event.currentTarget;
       try { await image.decode(); } catch { if (image.isConnected) onError(photo.id); return; }
       if (!image.isConnected || started.current) return;
@@ -28,6 +35,44 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
   const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
   const [photos, setPhotos] = useState<DroppedPhoto[]>([]);
   const { getRandomImage, hasImages } = useWeddingPhotos();
+  const takePrepared = useRef<(() => ReturnType<typeof getRandomImage>) | null>(null);
+
+  useEffect(() => {
+    if (!hasImages) return;
+    const queue: { photo: NonNullable<ReturnType<typeof getRandomImage>>; image: HTMLImageElement }[] = [];
+    const loading = new Set<HTMLImageElement>();
+    let cancelled = false;
+    function fillQueue() {
+      while (!cancelled && queue.length + loading.size < 2) {
+        const photo = getRandomImage();
+        if (!photo) return;
+        const src = photo.smallUrl ?? previewSource(photo.imageUrl);
+        const { props } = getImageProps({ src, alt: '', fill: true, sizes: photoSizes, unoptimized: directImage(src) });
+        const image = new window.Image();
+        loading.add(image);
+        image.fetchPriority = 'low';
+        if (props.sizes) image.sizes = props.sizes;
+        if (props.srcSet) image.srcset = props.srcSet;
+        image.src = props.src;
+        void image.decode().then(() => {
+          if (!cancelled) queue.push({ photo, image });
+        }).catch(() => { /* Skip broken previews; later drops can try another. */ })
+          .finally(() => loading.delete(image));
+      }
+    }
+    takePrepared.current = () => {
+      const next = queue.shift();
+      fillQueue();
+      return next?.photo ?? getRandomImage();
+    };
+    fillQueue();
+    return () => {
+      cancelled = true;
+      takePrepared.current = null;
+      loading.forEach(image => { image.src = ''; });
+      queue.length = 0;
+    };
+  }, [getRandomImage, hasImages]);
 
   const drop = useCallback((clickX?: number, clickY?: number) => {
     const element = stage.current;
@@ -45,10 +90,10 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
       y = 16 + Math.random() * Math.max(0, bounds.height - height - 32);
     }
     if (overlaps(x, y)) return;
-    const image = getRandomImage();
+    const image = takePrepared.current?.() ?? getRandomImage();
     if (!image) return;
     const id = nextId.current++;
-    const src = image.imageUrl.startsWith('/api/wedding/media/') ? `${image.imageUrl}?size=small` : image.imageUrl;
+    const src = image.smallUrl ?? previewSource(image.imageUrl);
     const photo = { id, src, caption: image.caption || "Will + Jackie", x, y, angle: Math.random() * 24 - 12 };
     setPhotos(previous => [...previous.slice(-5), photo]);
   }, [getRandomImage]);

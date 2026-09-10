@@ -1,4 +1,5 @@
-import { usesDatabase, databaseLibrary, saveDatabaseLibrary, saveDatabaseMedia, readDatabaseMedia, deleteDatabaseMedia } from './database';
+import { usesDatabase, databaseLibrary, saveDatabaseLibrary, readDatabaseMedia, deleteDatabaseMedia } from './database';
+import { storageConfigured, saveStorageMedia, readStorageMedia, deleteStorageMedia } from './storage';
 import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -59,15 +60,21 @@ export async function readLibrary(): Promise<PhotoLibrary> {
 }
 
 export async function saveMedia(name: string, bytes: Buffer) {
-  if (usesDatabase) return saveDatabaseMedia(name, bytes);
+  if (storageConfigured) return saveStorageMedia(name, bytes);
+  if (usesDatabase || process.env.VERCEL) throw new Error('Supabase Storage must be configured before uploading photos.');
   await mkdir(uploadDirectory, { recursive: true });
   await writeFile(path.join(uploadDirectory, name), bytes);
 }
 export async function readMedia(name: string) {
+  if (storageConfigured) {
+    try { return await readStorageMedia(name); }
+    catch { /* Legacy database reads are only for files awaiting migration. */ }
+  }
   if (usesDatabase) return readDatabaseMedia(name);
   return readFile(path.join(uploadDirectory, name));
 }
 export async function deleteMedia(name: string) {
+  if (storageConfigured) return deleteStorageMedia(name);
   if (usesDatabase) return deleteDatabaseMedia(name);
   await unlink(path.join(uploadDirectory, name));
 }

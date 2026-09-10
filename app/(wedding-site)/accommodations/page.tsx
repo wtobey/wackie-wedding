@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { readLibrary } from "@/lib/wedding-admin/store";
+import { withStorageUrls } from "@/lib/wedding-admin/storage";
 import VenuePhotoStack from "@/components/wedding_v1/VenuePhotoStack";
 import { wedding, weddingTravel } from "@/data/wedding_v1";
 import styles from "@/app/wedding_v1/wedding.module.css";
@@ -10,8 +11,8 @@ export const dynamic = 'force-dynamic';
 async function VenuePhotos() {
   const library = await readLibrary().catch(() => null);
   if (!library) return <p>Photos couldn’t load. Please refresh to try again.</p>;
-  const photos = library.photos.filter(photo => photo.collection === 'venue' && photo.included)
-    .map(photo => ({ src: photo.imageUrl, alt: photo.alt || photo.caption, caption: photo.caption, crop: photo.crop }));
+  const photos = (await withStorageUrls(library.photos.filter(photo => photo.collection === 'venue' && photo.included)))
+    .map(photo => ({ src: photo.thumbnailUrl || photo.imageUrl, alt: photo.alt || photo.caption, caption: photo.caption, crop: photo.crop }));
   return <VenuePhotoStack photos={photos}/>;
 }
 export default function Accommodations() {

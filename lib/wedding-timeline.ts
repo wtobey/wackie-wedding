@@ -1,7 +1,7 @@
 import type { PhotoCrop } from './wedding-admin/crop';
 import type { PolaroidImage } from "@/hooks/usePolaroidImages";
 
-export type TimelinePhoto = PolaroidImage & { crop?: PhotoCrop; isPreview?: boolean; sortOrder?: number; alt?: string };
+export type TimelinePhoto = PolaroidImage & { thumbnailUrl?: string; crop?: PhotoCrop; isPreview?: boolean; sortOrder?: number; alt?: string };
 export type GalleryRow = { id: number; image_path: string; caption: string | null; photo_date: string | null };
 export const GALLERY_PAGE_SIZE = 200;
 

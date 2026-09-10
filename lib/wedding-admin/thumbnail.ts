@@ -12,7 +12,8 @@ export function photoThumbnail(name: string, read: () => Promise<Buffer>, size: 
     .resize({ width: edge, height: edge, fit: 'inside', withoutEnlargement: true })
     .webp({ quality: 78 }).toBuffer());
   thumbnails.set(key, result);
-  if (thumbnails.size > 32) thumbnails.delete(thumbnails.keys().next().value!);
+  // Both homepage and gallery variants should fit without evicting each other.
+  if (thumbnails.size > 96) thumbnails.delete(thumbnails.keys().next().value!);
   void result.catch(() => { if (thumbnails.get(key) === result) thumbnails.delete(key); });
   return result;
 }

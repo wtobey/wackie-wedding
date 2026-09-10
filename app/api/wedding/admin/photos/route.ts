@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     if (collection !== 'gallery' && collection !== 'venue') throw new Error('Choose a photo collection.');
     const bytes = await sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 40000000 }).rotate().resize({ width: 2400, height: 2400, fit: 'inside', withoutEnlargement: true }).webp({ quality: 88 }).toBuffer();
     const filename = `${randomUUID()}.webp`;
-    await saveMedia(filename, bytes); destination = filename;
+    destination = filename; await saveMedia(filename, bytes);
     await readLibrary();
     return await exclusive(async () => {
       const current = await readLibrary();
