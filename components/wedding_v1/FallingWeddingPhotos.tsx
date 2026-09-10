@@ -65,6 +65,6 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
     <div className={styles.droppedPhotos} aria-hidden="true">{photos.map(photo => <figure key={photo.id} className={styles.droppedPhoto} style={{ left: photo.x, top: photo.y, "--photo-angle": `${photo.angle}deg` } as CSSProperties}>
       <div><Image src={photo.src} alt="" fill sizes="144px" unoptimized onError={() => setPhotos(previous => previous.filter(item => item.id !== photo.id))}/></div><figcaption>{photo.caption}</figcaption>
     </figure>)}</div>
-    {hasImages && <button className={styles.dropPhotoHint} onClick={() => drop()}>Click or tap to drop a photo.</button>}
+    <button className={styles.dropPhotoHint} disabled={!hasImages} onClick={() => drop()}>Click or tap to drop a photo.</button>
   </section>;
 }
