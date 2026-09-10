@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import WeddingAnalytics from "./WeddingAnalytics";
+import { trackWeddingEvent } from "@/lib/analytics/client";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
@@ -74,11 +76,13 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       finally { setSigningIn(false); }
       return;
     }
+    trackWeddingEvent("guest_access_granted");
     setError("");
     setAccess(true);
   }
 
   return <div className={`${styles.site} ${fullHeightGallery ? styles.gallerySite : ""}`}>
+    <WeddingAnalytics pathname={pathname} unlocked={unlocked}/>
     {!unlocked && pathname !== "/wedding_v1/admin" ? <main className={styles.gate}>
       <Link href="/" className={styles.gateBrand}>Will + Jackie</Link>
       <div className={styles.gateCard}>
@@ -103,7 +107,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
         <button className={styles.menuButton} onClick={() => setOpenMenuPath(menuOpen ? null : pathname)} aria-expanded={menuOpen} aria-controls="wedding-navigation">{menuOpen ? "Close −" : "Menu +"}</button>
         <nav id="wedding-navigation" aria-label="Wedding" className={`${styles.nav} ${menuOpen ? styles.navOpen : ""}`}>
           {navigation.map(([label, href]) => <Link key={href} href={href} aria-current={pathname === href ? "page" : undefined} onClick={() => setOpenMenuPath(null)}><span className={styles.navSizer} aria-hidden="true">{label}</span><span>{label}</span></Link>)}
-          <button type="button" className={styles.rsvpNav} aria-haspopup="dialog" onClick={() => { setOpenMenuPath(null); rsvpDialog.current?.showModal(); }}>RSVP</button>
+          <button type="button" className={styles.rsvpNav} aria-haspopup="dialog" onClick={() => { setOpenMenuPath(null); trackWeddingEvent("rsvp_opened"); rsvpDialog.current?.showModal(); }}>RSVP</button>
         </nav>
       </header>
       <main id="wedding-main" tabIndex={-1}>{children}</main>

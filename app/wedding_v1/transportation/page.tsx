@@ -34,7 +34,7 @@ export default function Transportation() {
       <div className={styles.travelRows}>
         <section><h2>SFO or OAK work, too.</h2><p>{weddingTravel.bayArea}</p></section>
         <section><h2>Rideshare & Sunday airport shuttle</h2><p>{weddingTravel.shuttle}</p></section>
-        <section><h2>Parking at Dawn Ranch</h2><p>If you’re planning to rent a car or drive to the venue, there is parking available onsite for guests.</p><a className={styles.textLink} href={wedding.mapsUrl} target="_blank" rel="noreferrer">Directions to Dawn Ranch</a></section>
+        <section><h2>Parking at Dawn Ranch</h2><p>If you’re planning to rent a car or drive to the venue, there is parking available onsite for guests.</p><a className={styles.textLink} data-wedding-event="directions_clicked" href={wedding.mapsUrl} target="_blank" rel="noreferrer">Directions to Dawn Ranch</a></section>
       </div>
     </div>
     <NextPage href="/wedding_v1/plan-your-trip" label="Turn the weekend into a getaway" showEyebrow={false}/>

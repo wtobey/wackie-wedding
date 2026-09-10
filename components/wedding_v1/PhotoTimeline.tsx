@@ -1,5 +1,6 @@
 "use client";
 
+import { trackWeddingEvent } from "@/lib/analytics/client";
 import { cropStyle } from '@/lib/wedding-admin/crop';
 
 import Image from "next/image";
@@ -77,7 +78,7 @@ export default function PhotoTimeline({ photos }: { photos: TimelinePhoto[] }) {
   const sequence = dated.length ? dated : undated;
   if (!sequence.length) return null;
   const toggleLabel = view === "timeline" ? "Switch to gallery grid" : "Switch to timeline";
-  const viewToggle = <button type="button" className={timeline.viewToggle} aria-label={toggleLabel} title={toggleLabel} aria-controls="wedding-photo-view" onClick={() => setView(current => current === "timeline" ? "grid" : "timeline")}>
+  const viewToggle = <button type="button" className={timeline.viewToggle} aria-label={toggleLabel} title={toggleLabel} aria-controls="wedding-photo-view" onClick={() => { const next = view === "timeline" ? "grid" : "timeline"; trackWeddingEvent("gallery_view_changed", next); setView(next); }}>
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         {view === "timeline" ? <><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></> : <><rect x="2" y="5" width="6" height="10" rx="1"/><rect x="11" y="5" width="6" height="10" rx="1"/><path d="M21 5h1v10h-1M3 20h18"/><circle cx="9" cy="20" r="2" fill="currentColor" stroke="none"/></>}
       </svg>
@@ -94,7 +95,7 @@ function PhotoGrid({ photos }: { photos: TimelinePhoto[] }) {
   const [selected, setSelected] = useState<number | null>(null);
   return <>
     <div className={timeline.gridScroll} data-photo-scroll role="region" aria-label="Photo gallery" tabIndex={0}>
-      <div className={styles.galleryGrid}>{photos.map((photo, index) => <button type="button" key={photo.id} className={`${styles.polaroid} ${styles.galleryPhoto}`} onClick={() => setSelected(index)} aria-label={`Open photo ${index + 1}${photo.caption ? `: ${photo.caption}` : ""}`}>
+      <div className={styles.galleryGrid}>{photos.map((photo, index) => <button type="button" key={photo.id} className={`${styles.polaroid} ${styles.galleryPhoto}`} onClick={() => { trackWeddingEvent("photo_opened", "grid"); setSelected(index); }} aria-label={`Open photo ${index + 1}${photo.caption ? `: ${photo.caption}` : ""}`}>
         <div className={styles.photoFrame}><Photo photo={photo} grid/></div>
         <span className={styles.galleryCaption}>{photo.caption?.trim() || photoDateLabel(photo.photoDate)}</span>
       </button>)}</div>
@@ -239,7 +240,7 @@ function TimelineAlbum({ sequence, undated }: { sequence: TimelinePhoto[]; undat
     allowInteraction();
     renderPosition(Math.min(geometry.current.maximum, next * geometry.current.stride));
   }
-  function openPhoto(index: number) { setSelected(index); }
+  function openPhoto(index: number) { trackWeddingEvent("photo_opened", "timeline"); setSelected(index); }
 
   return <div className={timeline.album} onPointerDown={() => { allowInteraction(); pointerHeld.current = true; }} onWheel={allowInteraction} onFocusCapture={allowInteraction}
     onTouchStartCapture={() => { touchHeld.current = true; allowInteraction(); }}
