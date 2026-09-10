@@ -33,7 +33,8 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
     const image = getRandomImage();
     if (!image) return;
     const id = nextId.current++;
-    const photo = { id, src: image.imageUrl, caption: image.caption || "Will + Jackie", x, y, angle: Math.random() * 24 - 12 };
+    const src = image.imageUrl.startsWith('/api/wedding/media/') ? `${image.imageUrl}?size=small` : image.imageUrl;
+    const photo = { id, src, caption: image.caption || "Will + Jackie", x, y, angle: Math.random() * 24 - 12 };
     setPhotos(previous => [...previous.slice(-5), photo]);
     const timer = setTimeout(() => { setPhotos(previous => previous.filter(item => item.id !== id)); timers.current.delete(timer); }, 14000);
     timers.current.add(timer);
@@ -63,7 +64,7 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
   return <section ref={stage} className={styles.hero} onClick={handleClick} aria-labelledby="welcome-title">
     {children}
     <div className={styles.droppedPhotos} aria-hidden="true">{photos.map(photo => <figure key={photo.id} className={styles.droppedPhoto} style={{ left: photo.x, top: photo.y, "--photo-angle": `${photo.angle}deg` } as CSSProperties}>
-      <div><Image src={photo.src} alt="" fill sizes="144px" unoptimized onError={() => setPhotos(previous => previous.filter(item => item.id !== photo.id))}/></div><figcaption>{photo.caption}</figcaption>
+      <div><Image src={photo.src} alt="" fill sizes="(max-width: 600px) 110px, 144px" unoptimized={photo.src.startsWith('/api/')} onError={() => setPhotos(previous => previous.filter(item => item.id !== photo.id))}/></div><figcaption>{photo.caption}</figcaption>
     </figure>)}</div>
     <button className={styles.dropPhotoHint} disabled={!hasImages} onClick={() => drop()}>Click or tap to drop a photo.</button>
   </section>;

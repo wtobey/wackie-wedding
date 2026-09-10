@@ -8,8 +8,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ name
   try {
     const library = await readLibrary();
     if (!library.photos.some(photo => photo.imageUrl === `/api/wedding/media/${name}` && photo.included) && !await isAdmin()) return new Response(null, { status: 404 });
-    const bytes = new URL(request.url).searchParams.get('size') === 'thumb'
-      ? await photoThumbnail(name, () => readMedia(name))
+    const size = new URL(request.url).searchParams.get('size');
+    const bytes = size === 'thumb' || size === 'small'
+      ? await photoThumbnail(name, () => readMedia(name), size)
       : await readMedia(name);
     return new Response(new Uint8Array(bytes), { headers: { 'Content-Type': 'image/webp', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' } });
   } catch { return new Response(null, { status: 404 }); }
