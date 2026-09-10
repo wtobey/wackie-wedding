@@ -32,7 +32,7 @@ export default function VenuePhotoStack({ photos }: { photos: VenuePhoto[] }) {
   }, [finishFlip]);
 
   function flip() {
-    if (busy.current) return;
+    if (busy.current || photos.length < 2 || !ready[photos[(current + 1) % photos.length].src]) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setCurrent(index => (index + 1) % photos.length);
       return;
@@ -43,7 +43,7 @@ export default function VenuePhotoStack({ photos }: { photos: VenuePhoto[] }) {
 
   if (!photos.length) return null;
   return <div className={styles.album}>
-    <button type="button" className={styles.stack} data-flipping={flipping} onClick={flip} aria-label="Flip to the next Dawn Ranch photo" aria-describedby="venue-photo-hint">
+    <button type="button" className={styles.stack} data-flipping={flipping} onClick={flip} aria-disabled={flipping || photos.length < 2 || !ready[photos[(current + 1) % photos.length].src]} aria-label="Show the next Dawn Ranch photo" aria-describedby="venue-photo-hint">
       {photos.map((photo, index) => {
         const depth = (index - current + photos.length) % photos.length;
         return <span key={photo.src} className={styles.card} data-depth={depth} aria-hidden={depth !== 0} onAnimationEnd={event => { if (depth === 0 && event.target === event.currentTarget) finishFlip(); }}>

@@ -253,7 +253,7 @@ function TimelineAlbum({ sequence }: { sequence: TimelinePhoto[] }) {
     }}>
       <ol ref={track} className={timeline.track}>
         <li ref={element => { cards.current[0] = element; }} className={`${timeline.card} ${timeline.storyCard}`} data-current={active === 0}>
-          <p className={timeline.storyCopy}><span className={timeline.storyOpening}>Once upon a time,</span>{" "}at a Christmas formal in a gay bar in Baltimore...</p>
+          <p className={timeline.storyCopy}><span className={timeline.storyOpening}>Once upon a time,</span>{" "}at a Christmas formal in a dive bar in Baltimore...</p>
         </li>
         {sequence.map((photo, index) => <li key={photo.id} ref={element => { cards.current[index + 1] = element; }} className={timeline.card} data-current={index + 1 === active}>
         <button className={`${styles.polaroid} ${timeline.photoButton}`} onClick={() => openPhoto(index)} aria-label={`Open photo ${index + 1}${photo.caption ? `: ${photo.caption}` : ""}`}>

@@ -1,9 +1,18 @@
 "use client";
 
 import Image, { getImageProps } from "next/image";
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { useWeddingPhotos } from "./useWeddingPhotos";
 import styles from "@/app/wedding_v1/wedding.module.css";
+
+const desktopQuery = "(min-width: 761px)";
+function subscribeDesktop(onChange: () => void) {
+  const query = window.matchMedia(desktopQuery);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+const readDesktop = () => window.matchMedia(desktopQuery).matches;
+const readServerDesktop = () => false;
 
 type DroppedPhoto = { id: number; src: string; caption: string; x: number; y: number; angle: number };
 const photoSizes = '(max-width: 600px) 110px, 144px';
@@ -34,7 +43,8 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
   const nextId = useRef(0);
   const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
   const [photos, setPhotos] = useState<DroppedPhoto[]>([]);
-  const { getRandomImage, hasImages } = useWeddingPhotos();
+  const desktop = useSyncExternalStore(subscribeDesktop, readDesktop, readServerDesktop);
+  const { getRandomImage, hasImages } = useWeddingPhotos(desktop);
   const takePrepared = useRef<(() => ReturnType<typeof getRandomImage>) | null>(null);
 
   useEffect(() => {
@@ -81,6 +91,7 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
   }, [getRandomImage, hasImages]);
 
   const drop = useCallback((clickX?: number, clickY?: number) => {
+    if (!desktop) return;
     const element = stage.current;
     const bounds = element?.getBoundingClientRect();
     if (!element || !bounds) return;
@@ -102,7 +113,7 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
     const src = image.smallUrl ?? previewSource(image.imageUrl);
     const photo = { id, src, caption: image.caption || "Will + Jackie", x, y, angle: Math.random() * 24 - 12 };
     setPhotos(previous => [...previous.slice(-5), photo]);
-  }, [getRandomImage]);
+  }, [desktop, getRandomImage]);
 
   const removePhoto = useCallback((id: number) => {
     setPhotos(previous => previous.filter(item => item.id !== id));
@@ -135,9 +146,9 @@ export default function FallingWeddingPhotos({ children }: { children: ReactNode
     drop(event.clientX - bounds.left, event.clientY - bounds.top);
   }
 
-  return <section ref={stage} className={styles.hero} onClick={handleClick} aria-labelledby="welcome-title">
+  return <section ref={stage} className={styles.hero} onClick={desktop ? handleClick : undefined} aria-labelledby="welcome-title">
     {children}
-    <div className={styles.droppedPhotos} aria-hidden="true">{photos.map(photo => <FallingPhoto key={photo.id} photo={photo} onReady={startLifetime} onError={removePhoto}/>)}</div>
-    <button className={styles.dropPhotoHint} disabled={!hasImages} onClick={() => drop()}>Click or tap to drop a photo.</button>
+    {desktop && <div className={styles.droppedPhotos} aria-hidden="true">{photos.map(photo => <FallingPhoto key={photo.id} photo={photo} onReady={startLifetime} onError={removePhoto}/>)}</div>}
+    <button className={styles.dropPhotoHint} disabled={!hasImages} onClick={() => drop()}>Click to drop a photo.</button>
   </section>;
 }
