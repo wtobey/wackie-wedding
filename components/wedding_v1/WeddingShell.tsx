@@ -87,7 +87,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
         <form onSubmit={enter} className={styles.passwordForm}>
           <label htmlFor="wedding-password">The wedding password</label>
           <div className={styles.passwordField}>
-            <input id="wedding-password" name="password" type={showPassword ? "text" : "password"} placeholder="Our little secret" autoComplete="current-password" autoCapitalize="none" spellCheck={false} required aria-invalid={Boolean(error)} aria-describedby={error ? "password-error" : undefined} onChange={() => setError("")} />
+            <input id="wedding-password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" autoCapitalize="none" spellCheck={false} required aria-invalid={Boolean(error)} aria-describedby={error ? "password-error" : undefined} onChange={() => setError("")} />
             <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button>
           </div>
           {error && <p id="password-error" className={styles.error} role="alert">{error}</p>}
