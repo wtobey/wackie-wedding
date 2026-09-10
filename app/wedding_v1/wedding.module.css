@@ -1,4 +1,6 @@
 .site {
+  --header-progress: 0;
+  --header-height: calc(110px - 46px * var(--header-progress));
   --font-wedding: "postea-greek-vf", sans-serif;
   --paper: #faf7f2;
   --ink: color-mix(in srgb, var(--espresso) 80%, var(--paper));
@@ -26,7 +28,8 @@
 .site > main { flex: 1 0 auto; }
 .site > header, .site > footer { flex-shrink: 0; }
 .site button, .site input { font: inherit; }
-.gallerySite { min-height: 100dvh; display: grid; grid-template-rows: auto calc(100dvh - 110px) auto; }
+.gallerySite { min-height: 100dvh; display: grid; grid-template-rows: var(--header-height) calc(100dvh - var(--header-height)) auto; }
+.gallerySite > .headerSpace { height: var(--header-height); }
 .gallerySite > header { width: 100%; margin: 0 auto; }
 .gallerySite > main { min-height: 0; overflow: auto; }
 .site button, .site a, .site input { -webkit-tap-highlight-color: transparent; }
@@ -439,14 +442,14 @@
 .header .brandIcon { color: inherit; }
 .header .brand { color: var(--orange); }
 .headerSpace { height: 110px; flex-shrink: 0; }
-.header.pinnedHeader { --header-progress: 0; --header-height: calc(110px - 46px * var(--header-progress)); position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: var(--header-height); padding-block: calc(16px - 6px * var(--header-progress)); box-shadow: 0 3px 12px rgb(84 41 22 / calc(.03 * var(--header-progress))); }
+.header.pinnedHeader { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: var(--header-height); padding-block: calc(16px - 6px * var(--header-progress)); box-shadow: 0 3px 12px rgb(84 41 22 / calc(.03 * var(--header-progress))); }
 .pinnedHeader .brandIcon { transform: scale(calc(1 - .35 * var(--header-progress))); }
 .pinnedHeader .brand { transform: scale(calc(1 - .13 * var(--header-progress))); transform-origin: left center; }
 .site main { scroll-margin-top: 80px; }
 .pinnedHeader .nav { max-height: calc(100dvh - var(--header-height)); overflow-y: auto; }
 @media (max-width: 760px) {
   .headerSpace { height: 92px; }
-  .header.pinnedHeader { --header-height: calc(92px - 32px * var(--header-progress)); }
+  .site { --header-height: calc(92px - 32px * var(--header-progress)); }
   .pinnedHeader .brand { transform: scale(calc(1 - .1 * var(--header-progress))); }
 }
 .header .nav > a[aria-current] {

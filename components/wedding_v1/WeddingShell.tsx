@@ -73,7 +73,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       if (progress === previous) return;
       previous = progress;
       // Scroll animation stays outside React's render cycle.
-      header.style.setProperty('--header-progress', String(progress));
+      header.parentElement?.parentElement?.style.setProperty('--header-progress', String(progress));
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);

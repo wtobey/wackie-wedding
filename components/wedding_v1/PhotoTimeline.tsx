@@ -34,18 +34,20 @@ const Photo = memo(function Photo({ photo, large = false, grid = false }: { phot
         setNearby(true);
         observer.disconnect();
       }
-    }, { root: element.closest('[data-photo-scroll]'), rootMargin: '120px', threshold: 0 });
+    }, { root: element.closest('[data-photo-scroll]'), rootMargin: grid ? '400px' : '0px 880px', threshold: 0 });
     observer.observe(element);
     return () => observer.disconnect();
-  }, [large, photo.isPreview]);
+  }, [large, grid, photo.isPreview]);
   if (photo.isPreview) return <div className={timeline.samplePhoto} data-tone={photo.id % 3}><strong>W + J</strong><span>sample photo {photo.id}</span></div>;
   if (failed) return <div className={styles.photoFallback}>Photo unavailable</div>;
   // Private uploads stay on the access-checked media route. Public Supabase
   // originals can use Next's resized, cached thumbnails.
   const storageUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const imageUrl = !large && photo.imageUrl.startsWith('/api/wedding/media/')
+    ? `${photo.imageUrl}?size=thumb` : photo.imageUrl;
   const publicThumbnail = photo.imageUrl.startsWith('/') && !photo.imageUrl.startsWith('/api/') || Boolean(storageUrl && photo.imageUrl.startsWith(`${storageUrl}/storage/v1/object/public/`));
   return <div ref={frame} className={timeline.deferredPhoto} data-loaded={loaded}>
-    {(large || nearby) && <Image style={large ? undefined : cropStyle(photo.crop)} src={photo.imageUrl} alt={photo.alt || photo.caption || "A memory from Will and Jackie’s photo collection"} fill unoptimized={large || !publicThumbnail} sizes={large ? "90vw" : grid ? "(max-width: 760px) 45vw, (max-width: 1200px) 30vw, 350px" : "(max-width: 600px) 62vw, 440px"} loading="eager" onLoad={() => setLoaded(true)} onError={() => setFailed(true)}/>}
+    {(large || nearby) && <Image style={large ? undefined : cropStyle(photo.crop)} src={imageUrl} alt={photo.alt || photo.caption || "A memory from Will and Jackie’s photo collection"} fill unoptimized={large || !publicThumbnail} sizes={large ? "90vw" : grid ? "(max-width: 760px) 45vw, (max-width: 1200px) 30vw, 350px" : "(max-width: 600px) 62vw, 440px"} loading="eager" onLoad={() => setLoaded(true)} onError={() => setFailed(true)}/>}
   </div>;
 });
 

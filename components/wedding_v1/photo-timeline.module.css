@@ -1,4 +1,4 @@
-.galleryPage { position: relative; width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; padding-top: 8px; padding-bottom: 20px; }
+.galleryPage { position: relative; width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; padding-bottom: 20px; }
 .viewer { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .viewContent { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .viewControls { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: min(1120px, calc(100% - 48px)); display: flex; justify-content: flex-end; pointer-events: none; z-index: 5; }
