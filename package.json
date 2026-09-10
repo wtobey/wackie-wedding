@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",
+    "heic-to": "^1.5.2",
     "next": "16.2.10",
     "postgres": "^3.4.9",
     "posthog-js": "^1.429.1",

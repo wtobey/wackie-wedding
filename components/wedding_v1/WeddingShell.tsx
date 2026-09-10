@@ -12,6 +12,14 @@ import styles from "@/app/wedding_v1/wedding.module.css";
 const PASSWORD = process.env.NEXT_PUBLIC_WEDDING_PASSWORD || "getwackie";
 const STORAGE_KEY = "wackie-wedding-access";
 const ACCESS_EVENT = "wackie-access-change";
+function subscribeScroll(listener: () => void) {
+  window.addEventListener('scroll', listener, { capture: true, passive: true });
+  return () => window.removeEventListener('scroll', listener, true);
+}
+function readCompactHeader() {
+  const panels = document.querySelectorAll('#wedding-main, [data-photo-scroll]');
+  return Math.max(window.scrollY, document.body.scrollTop, document.documentElement.scrollTop, ...Array.from(panels, panel => panel.scrollTop)) > 80;
+}
 let memoryAccess = false;
 function readAccess() {
   try { return localStorage.getItem(STORAGE_KEY) === PASSWORD; }
@@ -56,6 +64,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [signingIn, setSigningIn] = useState(false);
   const unlocked = useSyncExternalStore(subscribe, readAccess, () => false);
+  const compactHeader = useSyncExternalStore(subscribeScroll, readCompactHeader, () => false);
   const fullHeightGallery = unlocked && pathname === "/gallery";
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -102,7 +111,8 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       <p className={styles.gateDate}>June 5, 2027 · Guerneville, California</p>
     </main> : <>
       <a className={styles.skipLink} href="#wedding-main">Skip to content</a>
-      <header className={styles.header}>
+      <div className={styles.headerSpace}>
+      <header className={`${styles.header} ${styles.pinnedHeader}`} data-compact={compactHeader}>
         <Link href="/" className={styles.brand} aria-label="Will and Jackie wedding home"><span className={styles.brandIcon} aria-hidden="true"/><span>Will + Jackie</span></Link>
         <button className={styles.menuButton} onClick={() => setOpenMenuPath(menuOpen ? null : pathname)} aria-expanded={menuOpen} aria-controls="wedding-navigation">{menuOpen ? "Close −" : "Menu +"}</button>
         <nav id="wedding-navigation" aria-label="Wedding" className={`${styles.nav} ${menuOpen ? styles.navOpen : ""}`}>
@@ -110,6 +120,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
           <button type="button" className={styles.rsvpNav} aria-haspopup="dialog" onClick={() => { setOpenMenuPath(null); trackWeddingEvent("rsvp_opened"); rsvpDialog.current?.showModal(); }}>RSVP</button>
         </nav>
       </header>
+      </div>
       <main id="wedding-main" tabIndex={-1}>{children}</main>
       <dialog ref={rsvpDialog} className={styles.rsvpDialog} aria-labelledby="rsvp-message" aria-describedby="rsvp-invitation-note" onClick={event => { if (event.target === event.currentTarget) rsvpDialog.current?.close(); }}>
         <div className={styles.rsvpDialogContent}>

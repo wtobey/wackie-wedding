@@ -1,6 +1,8 @@
 'use client';
 import { adminRequest as api } from '@/lib/wedding-admin/client';
 import { cropStyle, defaultCrop } from '@/lib/wedding-admin/crop';
+import { sortGalleryByDate } from '@/lib/wedding-admin/sort';
+import { photoAccept, preparePhotoUpload } from '@/lib/wedding-admin/prepare-upload';
 import Image from 'next/image';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { ManagedPhoto, PhotoCollection, PhotoLibrary } from '@/lib/wedding-admin/types';
@@ -67,17 +69,26 @@ export default function PhotoManager() {
     try { const data = await api('/api/wedding/admin/photos', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(library) }); setLibrary(data); setDirty(false); setMessage('Saved. Your changes are now visible on the website.'); }
     catch (error) { setError((error as Error).message); } finally { setBusy(false); }
   }
+  function sortByDate() {
+    if (!library || busy || loadingLibrary) return;
+    setLibrary({ ...library, photos: sortGalleryByDate(library.photos) });
+    setDirty(true);
+    setMessage('Sorted oldest to newest, with undated photos last. Click Save changes to keep this order.');
+  }
   async function upload(files: FileList | null, replaceId?: string) {
     if (!files?.length) return;
+    const selectedFiles = Array.from(files);
     setBusy(true); setError(''); let completed = 0;
     try {
-      for (const file of Array.from(files)) {
-        if (file.size > 4 * 1024 * 1024) throw new Error("Choose an image up to 4 MB.");
-        const form = new FormData(); form.set('file', file); form.set('collection', collection); if (replaceId) form.set('replaceId', replaceId);
+      for (const file of selectedFiles) {
+        setMessage(`Preparing photo ${completed + 1} of ${selectedFiles.length}: ${file.name}`);
+        const prepared = await preparePhotoUpload(file);
+        setMessage(`Uploading photo ${completed + 1} of ${selectedFiles.length}: ${file.name}`);
+        const form = new FormData(); form.set('file', prepared); form.set('collection', collection); if (replaceId) form.set('replaceId', replaceId);
         const data = await api('/api/wedding/admin/photos', { method: 'POST', body: form }, 60000); setLibrary(data); completed++;
       }
       setMessage(replaceId ? 'Photo replaced.' : `${completed} photo(s) uploaded. Mark them included and save when ready.`);
-    } catch (error) { setError(`${completed ? `${completed} uploaded. ` : ''}${(error as Error).message}`); } finally { setBusy(false); }
+    } catch (error) { setMessage(''); setError(`${completed ? `${completed} uploaded. ` : ''}${selectedFiles[completed]?.name}: ${(error as Error).message}`); } finally { setBusy(false); }
   }
   if (checking) return <div className={styles.manager}>Checking admin access…</div>;
   if (!authorized) return <div className={styles.manager}><h1>Admin sign in</h1><p>Use your separate admin password to manage the photo collection.</p><form onSubmit={login}><label>Admin password<input name="password" type="password" autoComplete="current-password" required/></label><button disabled={busy}>Sign in</button></form>{error && <><p role="alert">{error}</p><button type="button" disabled={busy} onClick={() => { setChecking(true); setError(''); setSessionAttempt(value => value + 1); }}>Retry access check</button></>}</div>;
@@ -86,12 +97,13 @@ export default function PhotoManager() {
     <header className={styles.heading}><div><p>ADMIN ONLY</p><h1>Photo manager</h1><p>Edit your memories, then save to update the website.</p></div><button disabled={busy || dirty} onClick={async () => { try { await api('/api/wedding/admin/session', { method: 'DELETE' }); setAuthorized(false); setLibrary(null); window.dispatchEvent(new Event('wedding-admin-change')); } catch { setError('Could not sign out. Please retry.'); } }}>Sign out</button></header>
     <div className={styles.toolbar}>
       <div className={styles.tabs}><button aria-pressed={collection === 'gallery'} onClick={() => setCollection('gallery')}>Gallery photos</button><button aria-pressed={collection === 'venue'} onClick={() => setCollection('venue')}>Dawn Ranch photos</button></div>
+      {collection === 'gallery' && <button type="button" disabled={!library || busy || loadingLibrary || photos.length < 2} onClick={sortByDate}>Sort by date</button>}
       <button disabled={!dirty || busy} onClick={save}>{busy ? 'Working…' : 'Save changes'}</button>
       <button disabled={busy || loadingLibrary} onClick={() => { if (!dirty || window.confirm('Discard unsaved changes and reload?')) void load(); }}>{loadingLibrary ? 'Loading photos…' : 'Reload'}</button>
       <span>{dirty ? 'Unsaved changes' : `${photos.length} photos · ${photos.filter(photo => photo.included).length} included`}</span>
     </div>
     <p>Use the arrows to arrange photos. Dates label the gallery timeline; undated photos appear at the end. Excluded photos stay in this manager.</p>
-    <label className={styles.upload}>Upload photos<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={busy || dirty || !library} onChange={event => { void upload(event.target.files); event.target.value = ''; }}/><span>JPG, PNG or WebP · up to 4 MB each{dirty ? ' · Save your edits before uploading or replacing photos.' : ''}</span></label>
+    <label className={styles.upload}>Upload photos<input type="file" accept={photoAccept} multiple disabled={busy || dirty || !library} onChange={event => { void upload(event.target.files); event.target.value = ''; }}/><span>JPG, PNG, WebP or iPhone HEIC · Large photos are resized automatically. Originals on your device stay unchanged.{dirty ? ' · Save your edits before uploading or replacing photos.' : ''}</span></label>
     {error && <p className={styles.error} role="alert">{error}</p>}{message && <p role="status">{message}</p>}
     {!library ? <p role="status">{loadingLibrary ? 'Loading your photo library…' : 'The library has not loaded. Use Reload to try again.'}</p> : !photos.length ? <p>No photos in this collection yet. Upload your first memory above.</p> : <div className={styles.photos}>{photos.map((photo, index) => <article className={styles.photo} key={photo.id}>
       <div>
@@ -103,7 +115,7 @@ export default function PhotoManager() {
         </details>
       </div>
       <div className={styles.fields}><label>Caption<input value={photo.caption} maxLength={500} disabled={busy} onChange={event => edit(photo.id, { caption: event.target.value })}/></label><label>Description for accessibility<input value={photo.alt} maxLength={500} disabled={busy} onChange={event => edit(photo.id, { alt: event.target.value })}/></label><label>Photo date<input type="date" value={photo.photoDate || ''} disabled={busy} onChange={event => edit(photo.id, { photoDate: event.target.value || null })}/></label><label className={styles.checkbox}><input type="checkbox" checked={photo.included} disabled={busy} onChange={event => edit(photo.id, { included: event.target.checked })}/>Include on website</label></div>
-      <div className={styles.actions}><span>Position {index + 1}</span><button disabled={busy || index === 0} onClick={() => move(photo.id, -1)} aria-label={`Move photo ${index + 1} up`}>↑ Move up</button><button disabled={busy || index === photos.length - 1} onClick={() => move(photo.id, 1)} aria-label={`Move photo ${index + 1} down`}>↓ Move down</button><label>Replace photo<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || dirty} onChange={event => { void upload(event.target.files, photo.id); event.target.value = ''; }}/></label></div>
+      <div className={styles.actions}><span>Position {index + 1}</span><button disabled={busy || index === 0} onClick={() => move(photo.id, -1)} aria-label={`Move photo ${index + 1} up`}>↑ Move up</button><button disabled={busy || index === photos.length - 1} onClick={() => move(photo.id, 1)} aria-label={`Move photo ${index + 1} down`}>↓ Move down</button><label>Replace photo<input type="file" accept={photoAccept} disabled={busy || dirty} onChange={event => { void upload(event.target.files, photo.id); event.target.value = ''; }}/></label></div>
     </article>)}</div>}
   </div>;
 }
