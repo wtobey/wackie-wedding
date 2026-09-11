@@ -1,5 +1,5 @@
 .stage { position: relative; width: min(700px, 80vw, calc(100svh - 240px)); margin: 0 auto 28px; cursor: default; animation: gentleFloat 8s ease-in-out infinite; }
-.card { position: relative; overflow: hidden; box-shadow: 0 20px 40px -12px rgb(104 85 67 / 20%); transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform 180ms ease-out; }
+.card { position: relative; overflow: hidden; transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform 180ms ease-out; }
 .artwork { display: block; width: 100%; height: auto; user-select: none; filter: saturate(.9); }
 .card { display: block; cursor: pointer; }
 .invitationLink { display: block; }
@@ -18,3 +18,12 @@
 @media (max-width: 600px) {
   .stage { width: 84vw; margin-top: 16px; margin-bottom: 42px; }
 }
+
+/* Keep the destination still until the password card has become this image. */
+.turn { position: relative; }
+:global([data-unlocking="true"]) .stage { animation: none; z-index: 51; pointer-events: none; }
+:global([data-unlocking="true"]) .turn { visibility: hidden; backface-visibility: hidden; }
+:global([data-unlocking="true"]) .card { transform: none; transition: none; }
+:global([data-unlocking="true"]) .card::after { opacity: 0; }
+
+.card, .invitationSurface { box-shadow: 0 20px 40px -12px rgb(104 85 67 / 20%); }
