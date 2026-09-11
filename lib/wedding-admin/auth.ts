@@ -19,4 +19,4 @@ export async function setSession(active: boolean) {
     path: '/', maxAge: active ? lifetime : 0,
   });
 }
-export function sameOrigin(request: Request) { return request.headers.get('origin') === new URL(request.url).origin; }
+export { sameOrigin } from '@/lib/http/same-origin';

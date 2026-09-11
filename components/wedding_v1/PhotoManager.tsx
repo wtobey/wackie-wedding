@@ -5,6 +5,7 @@ import { sortGalleryByDate } from '@/lib/wedding-admin/sort';
 import { photoAccept, preparePhotoUpload } from '@/lib/wedding-admin/prepare-upload';
 import { readPhotoDate } from '@/lib/wedding-admin/photo-date';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { ManagedPhoto, PhotoCollection, PhotoLibrary } from '@/lib/wedding-admin/types';
 import styles from './photo-manager.module.css';
@@ -97,7 +98,7 @@ export default function PhotoManager() {
   if (!authorized) return <div className={styles.manager}><h1>Admin sign in</h1><p>Use your separate admin password to manage the photo collection.</p><form onSubmit={login}><label>Admin password<input name="password" type="password" autoComplete="current-password" required/></label><button disabled={busy}>Sign in</button></form>{error && <><p role="alert">{error}</p><button type="button" disabled={busy} onClick={() => { setChecking(true); setError(''); setSessionAttempt(value => value + 1); }}>Retry access check</button></>}</div>;
   const photos = library?.photos.filter(photo => photo.collection === collection) || [];
   return <div className={styles.manager}>
-    <header className={styles.heading}><div><p>ADMIN ONLY</p><h1>Photo manager</h1><p>Edit your memories, then save to update the website.</p></div><button disabled={busy || dirty} onClick={async () => { try { await api('/api/wedding/admin/session', { method: 'DELETE' }); setAuthorized(false); setLibrary(null); window.dispatchEvent(new Event('wedding-admin-change')); } catch { setError('Could not sign out. Please retry.'); } }}>Sign out</button></header>
+    <header className={styles.heading}><div><p>ADMIN ONLY</p><h1>Photo manager</h1><p><Link href="/admin/rsvp">Manage RSVPs</Link></p><p>Edit your memories, then save to update the website.</p></div><button disabled={busy || dirty} onClick={async () => { try { await api('/api/wedding/admin/session', { method: 'DELETE' }); setAuthorized(false); setLibrary(null); window.dispatchEvent(new Event('wedding-admin-change')); } catch { setError('Could not sign out. Please retry.'); } }}>Sign out</button></header>
     <div className={styles.toolbar}>
       <div className={styles.tabs}><button aria-pressed={collection === 'gallery'} onClick={() => setCollection('gallery')}>Gallery photos</button><button aria-pressed={collection === 'venue'} onClick={() => setCollection('venue')}>Dawn Ranch photos</button></div>
       {collection === 'gallery' && <button type="button" disabled={!library || busy || loadingLibrary || photos.length < 2} onClick={sortByDate}>Sort by date</button>}

@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed-polaroids.ts",
-    "test-db": "tsx scripts/test-db.ts"
+    "test-db": "tsx scripts/test-db.ts",
+    "rsvp:migrate": "tsx scripts/rsvp/migrate.ts",
+    "rsvp:backup": "tsx scripts/rsvp/backup.ts",
+    "rsvp:seed-local": "tsx scripts/rsvp/seed-local.ts",
+    "test:rsvp": "tsx --test lib/rsvp/*.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",

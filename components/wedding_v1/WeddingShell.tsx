@@ -177,7 +177,6 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
   const [showPassword, setShowPassword] = useState(false);
   const [openMenuPath, setOpenMenuPath] = useState<string | null>(null);
   const menuOpen = openMenuPath === pathname;
-  const rsvpDialog = useRef<HTMLDialogElement>(null);
 
   async function enter(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -204,7 +203,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
 
   return <div ref={siteRef} data-unlocking={unlocking} className={`${styles.site} ${fullHeightGallery ? styles.gallerySite : ""} ${unlocking ? styles.siteUnlocking : ""}`}>
     <WeddingAnalytics pathname={pathname} unlocked={unlocked}/>
-    {((!unlocked && pathname !== "/admin") || unlocking) && <main ref={gateRef} className={styles.gate} inert={unlocking}>
+    {((!unlocked && !pathname.startsWith("/admin")) || unlocking) && <main ref={gateRef} className={styles.gate} inert={unlocking}>
       <Link href="/" className={styles.gateBrand}>Will + Jackie</Link>
       <div ref={passwordMoverRef} className={styles.gateWelcome}>
       <div ref={passwordRotorRef} className={styles.passwordRotor}>
@@ -228,7 +227,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       </div>
       <p className={styles.gateDate}>June 5, 2027 | Guerneville, California</p>
     </main>}
-    {(unlocked || pathname === "/admin") && <>
+    {(unlocked || pathname.startsWith("/admin")) && <>
       <a className={styles.skipLink} href="#wedding-main">Skip to content</a>
       <div className={styles.headerSpace}>
       <header ref={headerRef} className={`${styles.header} ${styles.pinnedHeader}`}>
@@ -236,18 +235,12 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
         <button className={styles.menuButton} onClick={() => setOpenMenuPath(menuOpen ? null : pathname)} aria-expanded={menuOpen} aria-controls="wedding-navigation">{menuOpen ? "Close −" : "Menu +"}</button>
         <nav id="wedding-navigation" aria-label="Wedding" className={`${styles.nav} ${menuOpen ? styles.navOpen : ""}`}>
           {navigation.map(([label, href]) => <Link key={href} href={href} aria-current={pathname === href ? "page" : undefined} onClick={() => setOpenMenuPath(null)}><span className={styles.navSizer} aria-hidden="true">{label}</span><span>{label}</span></Link>)}
-          <button type="button" className={styles.rsvpNav} aria-haspopup="dialog" onClick={() => { setOpenMenuPath(null); trackWeddingEvent("rsvp_opened"); rsvpDialog.current?.showModal(); }}>RSVP</button>
+          <Link href="/rsvp" className={styles.rsvpNav} onClick={() => { setOpenMenuPath(null); trackWeddingEvent("rsvp_opened"); }}>RSVP</Link>
         </nav>
       </header>
       </div>
       <main id="wedding-main" tabIndex={-1}>{children}</main>
-      <dialog ref={rsvpDialog} className={styles.rsvpDialog} aria-labelledby="rsvp-message" aria-describedby="rsvp-invitation-note" onClick={event => { if (event.target === event.currentTarget) rsvpDialog.current?.close(); }}>
-        <div className={styles.rsvpDialogContent}>
-          <h2 id="rsvp-message">{"Not so fast, we're not quite ready for you yet!"}</h2>
-          <p id="rsvp-invitation-note">Check back when you get your invitation</p>
-          <button type="button" className={styles.rsvpDialogClose} autoFocus onClick={() => rsvpDialog.current?.close()}>Got it</button>
-        </div>
-      </dialog>
+
       <footer className={`${styles.footer} ${styles.watercolorFooter}`}>
         <div className={styles.footerArtwork} aria-hidden="true">
           <Image src={`/wedding_v1-assets/${footerIllustrations[pathname] ?? "wedding-river-float.png"}`} alt="" width={1536} height={1024} sizes="280px" />

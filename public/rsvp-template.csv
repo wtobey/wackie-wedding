@@ -1,0 +1,3 @@
+party_id,display_name,greeting,first_name,last_name,preferred_name,is_unnamed_plus_one,guest_id,event_ids
+example-party,Alex Morgan & Guest,We hope you can join us!,Alex,Morgan,,false,,wedding;welcome-party;brunch
+example-party,Alex Morgan & Guest,We hope you can join us!,,,,true,,wedding;welcome-party;brunch

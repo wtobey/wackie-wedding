@@ -1,7 +1,7 @@
 const guestPaths = new Set([
   '/', '/our-wedding', '/accommodations',
   '/transportation', '/plan-your-trip',
-  '/gallery', '/faq', '/registry',
+  '/gallery', '/faq', '/registry', '/rsvp',
 ]);
 
 export function analyticsPath(pathname: string, unlocked: boolean): string | null {
