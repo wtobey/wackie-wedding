@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { LookupResult, Party, RsvpMode } from '@/lib/rsvp/types';
 import { request } from '@/lib/rsvp/client';
+import { declineChoices } from '@/lib/rsvp/decline';
 import styles from './rsvp.module.css';
 function guestName(guest: Party['guests'][number]) {
   return guest.firstName
@@ -18,7 +19,6 @@ export default function RsvpForm() {
     [error, setError] = useState(''),
     [saved, setSaved] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
-  const [declinedNames, setDeclinedNames] = useState<string[]>([]);
   const pending = useRef<{ key: string; requestId: string } | null>(null);
   async function loadMode() {
     try {
@@ -71,6 +71,12 @@ export default function RsvpForm() {
       setBusy(false);
     }
   }
+  function resetLookup() {
+    setParty(null);
+    setSelected([]);
+    setSaved(false);
+    setError('');
+  }
   async function save(event: FormEvent) {
     event.preventDefault();
     if (!party) return;
@@ -90,11 +96,6 @@ export default function RsvpForm() {
         ...payload,
         requestId: pending.current.requestId,
       });
-      setDeclinedNames(
-        result.party.guests
-          .filter((g) => selected.includes(g.id))
-          .map(guestName),
-      );
       setParty(result.party);
       setSaved(true);
       pending.current = null;
@@ -194,25 +195,18 @@ export default function RsvpForm() {
         <>
           <h2>{party.displayName || 'Your party'}</h2>
           {saved ? (
-            <>
+            <div className={styles.confirmation}>
               <div role="status" className={styles.message}>
                 <p>Thank you for letting us know. We’ll miss you!</p>
-                <p>
-                  We’ve marked {declinedNames.join(' and ')} as not attending
-                  any wedding weekend events.
-                </p>
               </div>
               <p>If your plans change, please reach out to Will or Jackie.</p>
-            </>
+            </div>
           ) : (
             <form className={styles.form} onSubmit={save}>
               <fieldset className={styles.event} disabled={busy}>
                 <legend>Who won’t be able to attend?</legend>
-                <p>
-                  Select everyone who won’t be joining us. This will decline all
-                  wedding weekend events for each person selected.
-                </p>
-                {party.guests.map((g) => (
+                <p>Select everyone who won’t be joining us.</p>
+                {declineChoices(party.guests).map((g) => (
                   <label className={styles.check} key={g.id}>
                     <input
                       type="checkbox"
@@ -236,28 +230,24 @@ export default function RsvpForm() {
                 ))}
               </fieldset>
               <p>
-                Anyone you leave unselected will keep their current response.
-                You don’t need to RSVP yes yet.
+                If you’re planning to attend, please wait for your invitation to
+                RSVP.
               </p>
-              <button disabled={busy || !selected.length}>
-                {busy ? 'Saving…' : 'Confirm unable to attend'}
-              </button>
+              <div className={styles.actions}>
+                <button disabled={busy || !selected.length}>
+                  {busy ? 'Saving…' : 'Confirm unable to attend'}
+                </button>
+                <button
+                  type="button"
+                  className={styles.secondary}
+                  disabled={busy}
+                  onClick={resetLookup}
+                >
+                  Look up another name
+                </button>
+              </div>
             </form>
           )}
-          <p>
-            <button
-              className={styles.secondary}
-              disabled={busy}
-              onClick={() => {
-                setParty(null);
-                setSelected([]);
-                setSaved(false);
-                setError('');
-              }}
-            >
-              Look up another name
-            </button>
-          </p>
         </>
       )}
     </div>

@@ -254,7 +254,7 @@ test(
         },
       );
       await t.test(
-        'one decline covers all invited events and preserves other guests and metadata',
+        'primary decline includes the named plus-one across all events and preserves names and metadata',
         async () => {
           const preview = await previewImport(db, csv, ['brunch']);
           await commitImport(
@@ -289,9 +289,20 @@ test(
               .events.find((e) => e.eventId === 'wedding')!.mealChoice,
             'vegetarian',
           );
-          assert.deepEqual(
-            after.guests.find((g) => g.id === plus),
-            before.guests.find((g) => g.id === plus),
+          const plusAfter = after.guests.find((g) => g.id === plus)!;
+          const plusBefore = before.guests.find((g) => g.id === plus)!;
+          assert.ok(
+            plusAfter.events.every(
+              (event) => event.attendance === 'no' && event.respondedAt,
+            ),
+          );
+          assert.equal(plusAfter.firstName, plusBefore.firstName);
+          assert.equal(plusAfter.lastName, plusBefore.lastName);
+          assert.equal(plusAfter.isUnnamedPlusOne, true);
+          assert.ok(
+            (await party(db, 'other')).guests.every((g) =>
+              g.events.every((e) => e.attendance === null),
+            ),
           );
           assert.deepEqual(await submit(db, input), after);
           await assert.rejects(() =>

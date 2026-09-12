@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on `codex/rsvp-system`. No production database migration has been run. The local Docker database contains synthetic guests only. The initial migration defaults to **closed**. Production opening additionally requires `RSVP_RECOVERY_READY=true` after the recovery checklist below is completed.
+Implemented on `codex/rsvp-system`. No production database migration has been run. The local Docker database contains the draft guest-list import and clearly labeled synthetic test fixtures; local responses are test data and must not be copied to production. The initial migration defaults to **closed**. Production opening additionally requires `RSVP_RECOVERY_READY=true` after the recovery checklist below is completed.
 
 ## Backups: what protects what
 
@@ -54,7 +54,7 @@ For an actual incident: close RSVP first, preserve the current database as anoth
 
 `/rsvp` looks up exact normalized first/last names. Duplicate matches show only matching party labels. Selecting a party is checked against the supplied name again. A successful lookup issues a signed, HttpOnly, one-hour party-scoped cookie; no invite code is shown. This is name-based access as requested, not proof of identity. Someone who knows a guest's name can find that party.
 
-The current public flow accepts only declines. Guests select which party members cannot attend and confirm once. `POST /api/rsvp` takes `{action: "decline", partyId, revision, requestId, guestIds}`. The server expands the selected IDs into a no response for every existing invitation in the same transaction. Unselected guests, guest names and meal/dietary metadata remain unchanged. There are no per-event choices, plus-one naming prompts or yes options. Changes of plans are directed to Will or Jackie.
+The current public flow accepts only declines. Guests select which party members cannot attend and confirm once. `POST /api/rsvp` takes `{action: "decline", partyId, revision, requestId, guestIds}`. The server expands the selected IDs into a no response for every existing invitation in the same transaction. In a primary-and-plus-one party, selecting the primary automatically includes the plus-one, even after the plus-one has a saved name. The plus-one does not get a separate checkbox. In larger households without an explicit owner relationship, plus-ones remain selectable and are automatically included when all primary guests decline. Other guests, guest names and meal/dietary metadata remain unchanged. There are no per-event choices, plus-one naming prompts or yes options. Changes of plans are directed to Will or Jackie.
 
 Saves require the party cookie, same-origin JSON, a current party `revision` and a unique `requestId`. A retry with the same ID/payload returns the committed receipt; changed payload reuse is rejected. Stale edits return HTTP 409 and require a fresh lookup. Every supplied guest/event pair is checked before commit. No full guest list is exposed publicly. Responses only go to PostgreSQL; analytics captures page visits, not names, dietary details or form values.
 

@@ -158,3 +158,40 @@
     min-width: 100%;
   }
 }
+
+/* Keep action spacing independent of paragraph margins and form placement. */
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.actions button {
+  min-height: 48px;
+  box-sizing: border-box;
+}
+.page.page.page .form > p,
+.page.page.page .event > p {
+  margin-bottom: 0;
+}
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .actions button {
+    width: 100%;
+  }
+}
+
+.confirmation {
+  max-width: 640px;
+  display: grid;
+  gap: 20px;
+}
+.confirmation .message {
+  padding: 20px;
+}
+.page.page.page .confirmation p {
+  margin: 0;
+}

@@ -12,6 +12,7 @@ import type {
 } from './types';
 import { normalizeName, RsvpError } from './validation';
 import { hash, importRows } from './csv';
+import { declineGuestIds } from './decline';
 export async function settings(db: Db) {
   const [s] =
     await db`SELECT mode,revision FROM wedding_rsvp.settings WHERE id=1`;
@@ -140,23 +141,25 @@ export async function submit(
       );
     const responses =
       'action' in input
-        ? (input.guestIds.flatMap((guestId) => {
-            const guest = current.guests.find((g) => g.id === guestId);
-            if (!guest)
-              throw new RsvpError(
-                'This guest does not belong to your party.',
-                403,
-              );
-            if (!guest.events.length)
-              throw new RsvpError(
-                'Please contact Will or Jackie about this guest’s invitation.',
-              );
-            return guest.events.map((event) => ({
-              guestId,
-              eventId: event.eventId,
-              attendance: 'no' as const,
-            }));
-          }) as Submission['responses'])
+        ? (declineGuestIds(current.guests, input.guestIds).flatMap(
+            (guestId) => {
+              const guest = current.guests.find((g) => g.id === guestId);
+              if (!guest)
+                throw new RsvpError(
+                  'This guest does not belong to your party.',
+                  403,
+                );
+              if (!guest.events.length)
+                throw new RsvpError(
+                  'Please contact Will or Jackie about this guest’s invitation.',
+                );
+              return guest.events.map((event) => ({
+                guestId,
+                eventId: event.eventId,
+                attendance: 'no' as const,
+              }));
+            },
+          ) as Submission['responses'])
         : input.responses;
     const names = new Map<string, { first: string; last: string }>();
     for (const r of responses) {
