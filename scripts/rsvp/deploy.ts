@@ -18,7 +18,7 @@ async function main() {
   if (
     process.env.VERCEL !== "1" ||
     process.env.VERCEL_ENV !== "production" ||
-    process.env.RSVP_DEPLOY_JOB !== "apply"
+    !["apply", "migrate"].includes(process.env.RSVP_DEPLOY_JOB || "")
   )
     throw new Error(
       "Run only as an explicitly requested Vercel production deployment job.",
@@ -31,16 +31,23 @@ async function main() {
     throw new Error(
       "Production database and private Storage credentials are required.",
     );
-  const csv = csvSource(
-    Buffer.from(process.env.RSVP_DEPLOY_CSV_BASE64 || "", "base64").toString(
-      "utf8",
-    ),
-  );
-  if (digest(csv) !== process.env.RSVP_DEPLOY_CSV_SHA256)
+  const migrationOnly = process.env.RSVP_DEPLOY_JOB === "migrate";
+  const csv = migrationOnly
+    ? ""
+    : csvSource(
+        Buffer.from(
+          process.env.RSVP_DEPLOY_CSV_BASE64 || "",
+          "base64",
+        ).toString("utf8"),
+      );
+  if (!migrationOnly && digest(csv) !== process.env.RSVP_DEPLOY_CSV_SHA256)
     throw new Error("Guest-list checksum mismatch.");
   const events = ["wedding", "welcome-party", "brunch"];
-  const rows = importRows(csv, events);
-  if (rows.length !== Number(process.env.RSVP_DEPLOY_EXPECTED_GUESTS))
+  const rows = migrationOnly ? [] : importRows(csv, events);
+  if (
+    !migrationOnly &&
+    rows.length !== Number(process.env.RSVP_DEPLOY_EXPECTED_GUESTS)
+  )
     throw new Error("Unexpected guest count.");
   const storage = createClient(storageUrl, key, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -114,6 +121,57 @@ async function main() {
   try {
     const before = await snapshot("before");
     console.log(JSON.stringify({ migrations: await applyMigrations(db) }));
+    if (migrationOnly) {
+      const after = await snapshot("after-migration");
+      // Additive schema changes may add columns, but must retain every existing
+      // record and value. Stop promotion if anything needs reconciliation.
+      for (const [table, priorRows] of Object.entries(before.tables)) {
+        if (
+          ["migrations", "rate_limits"].includes(table) ||
+          !Array.isArray(priorRows)
+        )
+          continue;
+        const currentRows = after.tables[table];
+        if (
+          !Array.isArray(currentRows) ||
+          currentRows.length !== priorRows.length
+        )
+          throw new Error(
+            `Record count changed in ${table}; review before promotion.`,
+          );
+        for (const prior of priorRows) {
+          const identity = table === "import_rollbacks" ? "import_id" : "id";
+          const current = currentRows.find(
+            (row) => row[identity] === prior[identity],
+          );
+          if (
+            !current ||
+            Object.keys(prior).some(
+              (key) =>
+                JSON.stringify(current[key]) !== JSON.stringify(prior[key]),
+            )
+          )
+            throw new Error(
+              `Existing data changed in ${table}; review before promotion.`,
+            );
+        }
+      }
+      if (
+        JSON.stringify(before.photoLibrary) !==
+        JSON.stringify(after.photoLibrary)
+      )
+        throw new Error(
+          "Photo metadata changed during migration; review before promotion.",
+        );
+      console.log(
+        JSON.stringify({
+          migrationReady: true,
+          existingRsvpDataUnchanged: true,
+          photoLibraryUnchanged: true,
+        }),
+      );
+      return;
+    }
     const preview = await previewImport(db, csv, events);
     console.log(JSON.stringify({ importPreview: preview }));
     if (

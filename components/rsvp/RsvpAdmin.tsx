@@ -1,7 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import type { ImportPlan, RsvpMode, RsvpEvent } from '@/lib/rsvp/types';
+import type {
+  ImportPlan,
+  RsvpMode,
+  RsvpEvent,
+  SnapshotSummary,
+  RollbackPlan,
+} from '@/lib/rsvp/types';
 import { request } from '@/lib/rsvp/client';
 import styles from './rsvp.module.css';
 type RecordRow = {
@@ -22,6 +28,7 @@ type Data = {
   revision: number;
   events: RsvpEvent[];
   guests: RecordRow[];
+  snapshots: SnapshotSummary[];
 };
 export default function RsvpAdmin() {
   const [authorized, setAuthorized] = useState(false),
@@ -34,6 +41,7 @@ export default function RsvpAdmin() {
     [events, setEvents] = useState<string[]>([]),
     [preview, setPreview] = useState<ImportPlan | null>(null),
     [mode, setMode] = useState<RsvpMode>('closed');
+  const [rollback, setRollback] = useState<RollbackPlan | null>(null);
   const attempt = useRef<string | null>(null);
   async function load() {
     const d = await request<Data>('/api/rsvp/admin');
@@ -72,6 +80,7 @@ export default function RsvpAdmin() {
   }
   function invalidate() {
     setPreview(null);
+    setRollback(null);
     attempt.current = null;
   }
   return (
@@ -152,7 +161,8 @@ export default function RsvpAdmin() {
             <p>
               Upload a CSV to add parties, guests and invitations. Blank fields
               preserve existing information. Imports never erase responses or
-              remove guests. Use the exported guest IDs when correcting names.
+              remove guests. Use the exported guest IDs when correcting names. A
+              complete RSVP snapshot is saved automatically before every import.
             </p>
             <a
               className={styles.button}
@@ -252,12 +262,159 @@ export default function RsvpAdmin() {
                       invalidate();
                       await load();
                       setMessage(
-                        'Import saved. Existing responses have been preserved.',
+                        'Import saved with before-and-after snapshots. Existing responses have been preserved.',
                       );
                     })
                   }
                 >
                   Apply import
+                </button>
+              </div>
+            )}
+          </section>
+          <section className={styles.card}>
+            <h2>Snapshots &amp; rollback</h2>
+            <p>
+              Every import saves the complete RSVP data before and after the
+              change. You can undo imports in reverse order. Guest responses are
+              preserved; rollback will stop if it would hide a response or
+              overwrite a newer edit.
+            </p>
+            <button
+              disabled={busy}
+              onClick={() =>
+                work(async () => {
+                  await request('/api/rsvp/admin', {
+                    action: 'snapshot',
+                    requestId: crypto.randomUUID(),
+                  });
+                  await load();
+                  setMessage('Complete RSVP snapshot saved.');
+                })
+              }
+            >
+              Save snapshot now
+            </button>
+            {data.snapshots.length === 0 ? (
+              <p>
+                No saved snapshots yet. Imports made before this feature was
+                added cannot be undone here.
+              </p>
+            ) : (
+              <div className={styles.tableWrap}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Saved</th>
+                      <th>Snapshot</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.snapshots.map((s) => (
+                      <tr key={s.id}>
+                        <td>{new Date(s.createdAt).toLocaleString()}</td>
+                        <td>
+                          {
+                            {
+                              manual: 'Manual snapshot',
+                              before_import: 'Before guest import',
+                              after_import: 'After guest import',
+                              before_rollback: 'Before rollback',
+                            }[s.kind]
+                          }
+                          {s.rolledBack && s.kind === 'before_import'
+                            ? ' · Rolled back'
+                            : ''}
+                        </td>
+                        <td>
+                          <div className={styles.actions}>
+                            <a
+                              href={`/api/rsvp/admin/export?snapshot=${encodeURIComponent(s.id)}`}
+                            >
+                              Download
+                            </a>
+                            {s.canRollback && (
+                              <button
+                                disabled={busy}
+                                onClick={() =>
+                                  work(async () => {
+                                    setRollback(null);
+                                    setRollback(
+                                      await request<RollbackPlan>(
+                                        '/api/rsvp/admin',
+                                        {
+                                          action: 'preview_rollback',
+                                          snapshotId: s.id,
+                                        },
+                                      ),
+                                    );
+                                  })
+                                }
+                              >
+                                Preview rollback
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {rollback && (
+              <div className={styles.message}>
+                <h3>Review rollback</h3>
+                <p>
+                  Restore details for {rollback.partiesRestored} parties and{' '}
+                  {rollback.guestsRestored} guests. Remove{' '}
+                  {rollback.partiesArchived} parties, {rollback.guestsArchived}{' '}
+                  guests and {rollback.invitationsArchived} invitations added by
+                  the import from the active guest list. The original records
+                  stay in history.
+                </p>
+                <p>
+                  {rollback.responsesPreserved} recorded event responses will be
+                  kept. A new snapshot is saved before rollback.
+                </p>
+                {rollback.conflicts.length > 0 ? (
+                  <>
+                    <p>Rollback is blocked because of newer changes:</p>
+                    <ul>
+                      {rollback.conflicts.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <button
+                    disabled={busy}
+                    onClick={() =>
+                      work(async () => {
+                        await request('/api/rsvp/admin', {
+                          action: 'rollback',
+                          snapshotId: rollback.snapshotId,
+                          revision: rollback.revision,
+                          hash: rollback.hash,
+                        });
+                        invalidate();
+                        await load();
+                        setMessage(
+                          'Guest import rolled back. Responses and history have been preserved.',
+                        );
+                      })
+                    }
+                  >
+                    Confirm rollback
+                  </button>
+                )}
+                <button
+                  className={styles.secondary}
+                  disabled={busy}
+                  onClick={() => setRollback(null)}
+                >
+                  Cancel
                 </button>
               </div>
             )}

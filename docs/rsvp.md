@@ -24,6 +24,24 @@ These snapshots contain RSVP tables and photo-library metadata. They are **not f
 
 The shared migration runner is `scripts/rsvp/migrations.ts`. `npm run rsvp:migrate` remains available for operators with direct database access and takes a full `pg_dump` before applying the same SQL files.
 
+For subsequent schema-only releases, use the same explicit deployment job with `RSVP_DEPLOY_JOB=migrate` and no CSV variables. This mode saves verified before/after snapshots to the private bucket, applies pending migrations, and checks that existing RSVP records and photo metadata are unchanged. It does not import guests or change RSVP availability. Build with `--skip-domain`, verify success, then promote the deployment.
+
+## Guest-import snapshots and rollback
+
+Migration `002_import_snapshots.sql` adds immutable snapshots and archive markers. Apply it before deploying the updated app. It is additive; existing guest records and responses are retained. Normal Vercel builds still do not run database migrations.
+
+Production migration `002_import_snapshots.sql` completed on September 12, 2026 (UTC), with existing RSVP data and photo metadata verified unchanged. Its before/after backups are in the private `wedding-rsvp-backups` bucket under `2026-09-12T23-26-47-414Z-2729bd57-2105-42d7-a52a-5aa751424315/`.
+
+The RSVP manager now saves a complete JSON snapshot before and after every successful CSV import, in the same transaction as the import. If either snapshot fails, the entire import is rolled back. Snapshots contain parties, guests, event invitations and responses, event definitions, availability settings, audit history, and save receipts, including archived records. They omit transient rate-limit counters and do not recursively copy older snapshot payloads. These are RSVP data snapshots, not photo backups or whole-Supabase database dumps.
+
+In **Snapshots & rollback**, use **Save snapshot now** for an extra restore reference or **Download** for an independent JSON copy. Snapshots live in the private `wedding_rsvp.snapshots` table in the same PostgreSQL database, have verified SHA-256 checksums, and cannot be edited or deleted through ordinary SQL. The manager shows the latest 100 snapshots; older snapshots remain stored. Nothing expires automatically.
+
+To undo a CSV upload, choose **Preview rollback** beside its **Before guest import** snapshot and review the changes before **Confirm rollback**. Imports must be undone newest first. Rollback restores only party/guest fields changed by that import and archives accidental additions from the active guest list. Archived records remain in the database and history; a later import can reactivate the same stable IDs. It never rewinds availability, existing event responses, their timestamps, receipts, or audit history. A full rescue snapshot is taken immediately before rollback.
+
+Rollback refuses conflicts: an added invitation that has since received a response, a guest or party with new dependent records, or an imported field edited again afterward. A changed revision invalidates the preview. This deliberately avoids hiding real replies or guessing which newer edit to discard. Existing responses can arrive after an import without preventing rollback of unrelated names or party details. All writes use the same transaction lock as guest submissions.
+
+Manual snapshots are downloadable recovery references; the automated rollback button is specifically for imports with paired before/after snapshots. Imports made before this feature was installed cannot be undone through this UI. Other recovery work can use the snapshots and audit history without blindly replacing current data.
+
 ## Recovery operations
 
 1. Confirm the exact Supabase project and plan; verify daily backup/PITR status in its dashboard. Managed backup/PITR status has **not** been verified by this task.

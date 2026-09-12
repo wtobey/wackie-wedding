@@ -77,3 +77,25 @@ export type DeclineSubmission = {
   requestId: string;
   guestIds: string[];
 };
+
+export type SnapshotSummary = {
+  id: string;
+  createdAt: string;
+  kind: 'manual' | 'before_import' | 'after_import' | 'before_rollback';
+  operationId: string;
+  revision: number;
+  rolledBack: boolean;
+  canRollback: boolean;
+};
+export type RollbackPlan = {
+  snapshotId: string;
+  revision: number;
+  hash: string;
+  partiesRestored: number;
+  guestsRestored: number;
+  partiesArchived: number;
+  guestsArchived: number;
+  invitationsArchived: number;
+  responsesPreserved: number;
+  conflicts: string[];
+};

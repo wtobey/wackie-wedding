@@ -19,7 +19,10 @@ test(
       await db`CREATE SCHEMA wedding_admin`;
       await db`CREATE TABLE wedding_admin.library(id integer PRIMARY KEY, photos jsonb)`;
       await db`INSERT INTO wedding_admin.library VALUES(1,${db.json([{ id: "preserved-photo" }])})`;
-      assert.deepEqual(await applyMigrations(db), ["001_initial.sql"]);
+      assert.deepEqual(await applyMigrations(db), [
+        "001_initial.sql",
+        "002_import_snapshots.sql",
+      ]);
       assert.deepEqual(await applyMigrations(db), []);
       assert.deepEqual(
         (await db`SELECT photos FROM wedding_admin.library`)[0].photos,

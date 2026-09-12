@@ -12,6 +12,7 @@ import type {
 } from "./types";
 import { normalizeName, RsvpError } from "./validation";
 import { hash, importRows } from "./csv";
+import { saveSnapshot, snapshotList } from "./snapshots";
 import { declineGuestIds } from "./decline";
 export async function settings(db: Db) {
   const [s] =
@@ -20,12 +21,12 @@ export async function settings(db: Db) {
 }
 export async function party(db: Db, partyId: string): Promise<Party> {
   const [p] =
-    await db`SELECT id,display_name,greeting,revision FROM wedding_rsvp.parties WHERE id=${partyId}`;
+    await db`SELECT id,display_name,greeting,revision FROM wedding_rsvp.parties WHERE id=${partyId} AND archived_at IS NULL`;
   if (!p) throw new RsvpError("Party not found.", 404);
   const guests =
-    await db`SELECT * FROM wedding_rsvp.guests WHERE party_id=${partyId} ORDER BY is_unnamed_plus_one,created_at,id`;
+    await db`SELECT * FROM wedding_rsvp.guests WHERE party_id=${partyId} AND archived_at IS NULL ORDER BY is_unnamed_plus_one,created_at,id`;
   const invitations =
-    await db`SELECT i.*,e.name,e.starts_at FROM wedding_rsvp.invitations i JOIN wedding_rsvp.events e ON e.id=i.event_id JOIN wedding_rsvp.guests g ON g.id=i.guest_id WHERE g.party_id=${partyId} ORDER BY e.starts_at NULLS LAST,e.name`;
+    await db`SELECT i.*,e.name,e.starts_at FROM wedding_rsvp.invitations i JOIN wedding_rsvp.events e ON e.id=i.event_id JOIN wedding_rsvp.guests g ON g.id=i.guest_id WHERE g.party_id=${partyId} AND g.archived_at IS NULL AND i.archived_at IS NULL ORDER BY e.starts_at NULLS LAST,e.name`;
   return {
     id: p.id,
     displayName: p.display_name,
@@ -61,7 +62,7 @@ export async function lookup(
   if (mode === "closed")
     throw new RsvpError("RSVP will open when invitations arrive.", 403);
   const matches =
-    await db`SELECT DISTINCT p.id,p.display_name FROM wedding_rsvp.guests g JOIN wedding_rsvp.parties p ON p.id=g.party_id WHERE normalized_first_name=${normalizeName(first)} AND normalized_last_name=${normalizeName(last)} ORDER BY p.id LIMIT 21`;
+    await db`SELECT DISTINCT p.id,p.display_name FROM wedding_rsvp.guests g JOIN wedding_rsvp.parties p ON p.id=g.party_id WHERE g.archived_at IS NULL AND p.archived_at IS NULL AND normalized_first_name=${normalizeName(first)} AND normalized_last_name=${normalizeName(last)} ORDER BY p.id LIMIT 21`;
   if (!matches.length || (selected && !matches.some((p) => p.id === selected)))
     return { status: "not_found" };
   if (matches.length > 20)
@@ -207,7 +208,7 @@ async function plan(db: Db, rows: ImportRow[]): Promise<ImportPlan> {
     guests = await db`SELECT * FROM wedding_rsvp.guests`,
     events = await db`SELECT id FROM wedding_rsvp.events`,
     invitations =
-      await db`SELECT guest_id,event_id FROM wedding_rsvp.invitations`;
+      await db`SELECT guest_id,event_id FROM wedding_rsvp.invitations WHERE archived_at IS NULL`;
   const result: ImportPlan = {
     hash: hash(rows),
     revision,
@@ -225,7 +226,7 @@ async function plan(db: Db, rows: ImportRow[]): Promise<ImportPlan> {
       throw new RsvpError(`Row ${r.row}: Unknown event ID.`);
     if (!seen.has(r.partyId)) {
       const p = parties.find((p) => p.id === r.partyId);
-      if (!p) result.partiesAdded++;
+      if (!p || p.archived_at) result.partiesAdded++;
       else if (
         (r.displayName !== null && r.displayName !== p.display_name) ||
         (r.greeting !== null && r.greeting !== p.greeting)
@@ -249,7 +250,7 @@ async function plan(db: Db, rows: ImportRow[]): Promise<ImportPlan> {
       );
     // Resolve a stable original import key after a plus-one has been named.
     if (g) r.guestId = g.id;
-    if (!g) result.guestsAdded++;
+    if (!g || g.archived_at) result.guestsAdded++;
     else if (
       (r.firstName !== null && r.firstName !== g.first_name) ||
       (r.lastName !== null && r.lastName !== g.last_name) ||
@@ -301,16 +302,18 @@ export async function commitImport(
         "The guest list changed. Preview the import again before applying it.",
         409,
       );
+    await saveSnapshot(tx, "before_import", requestId);
     for (const r of rows) {
-      await tx`INSERT INTO wedding_rsvp.parties(id,display_name,greeting) VALUES(${r.partyId},${r.displayName},${r.greeting}) ON CONFLICT(id) DO UPDATE SET display_name=coalesce(EXCLUDED.display_name,parties.display_name),greeting=coalesce(EXCLUDED.greeting,parties.greeting),updated_at=now()`;
-      await tx`INSERT INTO wedding_rsvp.guests(id,party_id,import_key,first_name,last_name,preferred_name,normalized_first_name,normalized_last_name,is_unnamed_plus_one) VALUES(${r.guestId},${r.partyId},${r.importKey},${r.firstName},${r.lastName},${r.preferredName},${r.firstName ? normalizeName(r.firstName) : null},${r.lastName ? normalizeName(r.lastName) : null},${r.isUnnamedPlusOne}) ON CONFLICT(id) DO UPDATE SET first_name=coalesce(EXCLUDED.first_name,guests.first_name),last_name=coalesce(EXCLUDED.last_name,guests.last_name),preferred_name=coalesce(EXCLUDED.preferred_name,guests.preferred_name),normalized_first_name=coalesce(EXCLUDED.normalized_first_name,guests.normalized_first_name),normalized_last_name=coalesce(EXCLUDED.normalized_last_name,guests.normalized_last_name),updated_at=now()`;
+      await tx`INSERT INTO wedding_rsvp.parties(id,display_name,greeting) VALUES(${r.partyId},${r.displayName},${r.greeting}) ON CONFLICT(id) DO UPDATE SET archived_at=NULL,display_name=coalesce(EXCLUDED.display_name,parties.display_name),greeting=coalesce(EXCLUDED.greeting,parties.greeting),updated_at=now()`;
+      await tx`INSERT INTO wedding_rsvp.guests(id,party_id,import_key,first_name,last_name,preferred_name,normalized_first_name,normalized_last_name,is_unnamed_plus_one) VALUES(${r.guestId},${r.partyId},${r.importKey},${r.firstName},${r.lastName},${r.preferredName},${r.firstName ? normalizeName(r.firstName) : null},${r.lastName ? normalizeName(r.lastName) : null},${r.isUnnamedPlusOne}) ON CONFLICT(id) DO UPDATE SET archived_at=NULL,first_name=coalesce(EXCLUDED.first_name,guests.first_name),last_name=coalesce(EXCLUDED.last_name,guests.last_name),preferred_name=coalesce(EXCLUDED.preferred_name,guests.preferred_name),normalized_first_name=coalesce(EXCLUDED.normalized_first_name,guests.normalized_first_name),normalized_last_name=coalesce(EXCLUDED.normalized_last_name,guests.normalized_last_name),updated_at=now()`;
       for (const event of r.eventIds)
-        await tx`INSERT INTO wedding_rsvp.invitations(id,guest_id,event_id) VALUES(${randomUUID()},${r.guestId},${event}) ON CONFLICT(guest_id,event_id) DO NOTHING`;
+        await tx`INSERT INTO wedding_rsvp.invitations(id,guest_id,event_id) VALUES(${randomUUID()},${r.guestId},${event}) ON CONFLICT(guest_id,event_id) DO UPDATE SET archived_at=NULL,updated_at=now() WHERE invitations.archived_at IS NOT NULL`;
     }
     for (const partyId of new Set(rows.map((r) => r.partyId)))
       await tx`UPDATE wedding_rsvp.parties SET revision=revision+1,updated_at=now() WHERE id=${partyId}`;
     await tx`UPDATE wedding_rsvp.settings SET revision=revision+1 WHERE id=1`;
     await remember(tx, requestId, "import", payload, preview);
+    await saveSnapshot(tx, "after_import", requestId);
     return preview;
   });
 }
@@ -318,8 +321,13 @@ export async function adminData(db: Db) {
   const events =
     await db`SELECT id,name,starts_at AS "startsAt" FROM wedding_rsvp.events ORDER BY name`;
   const guests =
-    await db`SELECT g.id AS guest_id,g.party_id,p.display_name,p.greeting,g.first_name,g.last_name,g.preferred_name,g.is_unnamed_plus_one,i.event_id,e.name AS event_name,i.attendance,i.meal_choice,i.dietary_restrictions,i.responded_at FROM wedding_rsvp.guests g JOIN wedding_rsvp.parties p ON p.id=g.party_id LEFT JOIN wedding_rsvp.invitations i ON i.guest_id=g.id LEFT JOIN wedding_rsvp.events e ON e.id=i.event_id ORDER BY p.id,g.id,e.name`;
-  return { ...(await settings(db)), events, guests };
+    await db`SELECT g.id AS guest_id,g.party_id,p.display_name,p.greeting,g.first_name,g.last_name,g.preferred_name,g.is_unnamed_plus_one,i.event_id,e.name AS event_name,i.attendance,i.meal_choice,i.dietary_restrictions,i.responded_at FROM wedding_rsvp.guests g JOIN wedding_rsvp.parties p ON p.id=g.party_id LEFT JOIN wedding_rsvp.invitations i ON i.guest_id=g.id AND i.archived_at IS NULL LEFT JOIN wedding_rsvp.events e ON e.id=i.event_id WHERE g.archived_at IS NULL AND p.archived_at IS NULL ORDER BY p.id,g.id,e.name`;
+  return {
+    ...(await settings(db)),
+    events,
+    guests,
+    snapshots: await snapshotList(db),
+  };
 }
 export async function setMode(
   db: postgres.Sql,

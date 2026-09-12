@@ -8,6 +8,11 @@ import {
   setMode,
 } from '@/lib/rsvp/service';
 import { id, object, revision, RsvpError, text } from '@/lib/rsvp/validation';
+import {
+  commitRollback,
+  manualSnapshot,
+  previewRollback,
+} from '@/lib/rsvp/snapshots';
 export const runtime = 'nodejs';
 export async function GET() {
   return route(async () => {
@@ -23,6 +28,29 @@ export async function POST(request: Request) {
   return route(async () => {
     await requireAdmin();
     const input = object(await body(request, 1_100_000));
+    if (input.action === 'snapshot')
+      return json(
+        await withRsvpDatabase((db) =>
+          manualSnapshot(db, id(input.requestId, 'the snapshot request')),
+        ),
+      );
+    if (input.action === 'preview_rollback')
+      return json(
+        await withRsvpDatabase((db) =>
+          previewRollback(db, id(input.snapshotId, 'the snapshot')),
+        ),
+      );
+    if (input.action === 'rollback')
+      return json(
+        await withRsvpDatabase((db) =>
+          commitRollback(
+            db,
+            id(input.snapshotId, 'the snapshot'),
+            revision(input.revision),
+            text(input.hash, 'the preview hash'),
+          ),
+        ),
+      );
     if (input.action === 'mode') {
       if (input.mode !== 'closed' && input.mode !== 'declines_only')
         throw new RsvpError(

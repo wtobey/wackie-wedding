@@ -569,7 +569,15 @@
   transform: translateX(-50%);
   background: url('/wedding_v1-assets/transportation-sun-pattern.jpg') center 7% / 300px auto repeat-x;
 }
- .airportSummary .airportCode { font-size: clamp(64px, 9vw, 110px); margin: 8px 0 24px; }
+.airportSummary {
+  align-self: start;
+  padding: clamp(24px, 3vw, 40px);
+  background: linear-gradient(145deg, #fffffe, #fffcf8);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  box-shadow: 0 5px 16px #68554314, 0 1px 3px #00000008;
+}
+.airportSummary .airportCode { font-size: clamp(64px, 9vw, 110px); margin: 8px 0 24px; }
 .airportSummary > p:not(.eyebrow) { max-width: 430px; }
 .flightOrigins { display: flex; flex-direction: column; gap: 28px; }
 .airportFeature .flightOrigin { margin: 0; padding: 0; border: 0; }
@@ -735,7 +743,15 @@
 .faqContent h2 { margin: 0; font-size: 25px; }
 @media(max-width:760px) {
   .airportFeature, .travelRows > section, .faqContent .transportNotes > section { display: block; }
-  .airportSummary > p:not(.eyebrow) { max-width: none; margin-bottom: 32px; }
+  .airportSummary {
+    margin-bottom: 32px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .airportSummary > p:not(.eyebrow) { max-width: none; margin-bottom: 0; }
   .airportFeature .flightOrigin { padding: 0; }
   .travelRows h2 { margin-bottom: 20px; }
   .travelRows > section { padding: 32px 0; }

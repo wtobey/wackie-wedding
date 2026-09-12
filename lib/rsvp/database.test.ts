@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { applyMigrations } from '../../scripts/rsvp/migrations';
 import postgres from 'postgres';
 import {
   commitImport,
@@ -52,9 +52,7 @@ test(
       };
     }
     try {
-      await db.begin((tx) =>
-        tx.unsafe(readFileSync('migrations/rsvp/001_initial.sql', 'utf8')),
-      );
+      await applyMigrations(db);
       await t.test('starts closed and import retry is idempotent', async () => {
         assert.equal((await settings(db)).mode, 'closed');
         const p = await previewImport(db, csv, ['wedding']),
