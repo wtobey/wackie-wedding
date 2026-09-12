@@ -21,7 +21,7 @@ For this wedding, use managed PITR if available, plus encrypted offsite daily da
 5. Copy the dump and manifest to independent storage; restore into a **new, empty, isolated database** using the procedure below. Verify counts and guest responses. This has been tested locally with synthetic data, but must also be tested on the real project's backup.
 6. Review migrations and run `RSVP_ALLOW_REMOTE_MIGRATION=true npm run rsvp:migrate`. It requires a fresh successful backup, serializes migrations, verifies checksums, and applies pending migrations atomically. It never resets tables or runs migrations during HTTP requests. Existing photo schemas are untouched.
 7. Configure `RSVP_SESSION_SECRET` (at least 32 random bytes recommended; server-only) or use the existing admin password as a signing-secret fallback. Confirm admin access uses `WEDDING_ADMIN_PASSWORD` (minimum 16 characters).
-8. Deploy, verify closed-mode behavior and admin imports. Set `RSVP_RECOVERY_READY=true` only after steps 1–5 are complete, then select **Early declines only** or **Yes and no responses** in `/admin/rsvp`.
+8. Deploy, verify closed-mode behavior and admin imports. Set `RSVP_RECOVERY_READY=true` only after steps 1–5 are complete, then select **Early declines only** in `/admin/rsvp`. Yes responses are not available in the current release.
 
 ## Restore drill
 
@@ -54,6 +54,8 @@ For an actual incident: close RSVP first, preserve the current database as anoth
 
 `/rsvp` looks up exact normalized first/last names. Duplicate matches show only matching party labels. Selecting a party is checked against the supplied name again. A successful lookup issues a signed, HttpOnly, one-hour party-scoped cookie; no invite code is shown. This is name-based access as requested, not proof of identity. Someone who knows a guest's name can find that party.
 
+The current public flow accepts only declines. Guests select which party members cannot attend and confirm once. `POST /api/rsvp` takes `{action: "decline", partyId, revision, requestId, guestIds}`. The server expands the selected IDs into a no response for every existing invitation in the same transaction. Unselected guests, guest names and meal/dietary metadata remain unchanged. There are no per-event choices, plus-one naming prompts or yes options. Changes of plans are directed to Will or Jackie.
+
 Saves require the party cookie, same-origin JSON, a current party `revision` and a unique `requestId`. A retry with the same ID/payload returns the committed receipt; changed payload reuse is rejected. Stale edits return HTTP 409 and require a fresh lookup. Every supplied guest/event pair is checked before commit. No full guest list is exposed publicly. Responses only go to PostgreSQL; analytics captures page visits, not names, dietary details or form values.
 
 Lookup/save rate limits use shared database counters (30 per IP per hour and 300 globally per action). Vercel uses its overwritten `x-vercel-forwarded-for`; non-Vercel local development shares a local counter. Revisit this IP adapter before deploying to a different host. Session and request payloads never appear in application logs.
@@ -68,6 +70,6 @@ docker run --name wackie-rsvp-dev -e POSTGRES_DB=wedding_rsvp_dev \
   -v wackie-rsvp-dev-data:/var/lib/postgresql/data -d postgres:17
 ```
 
-Set the ignored `.env.local` `RSVP_DATABASE_URL` to that database, run `npm run rsvp:migrate`, then `npm run rsvp:seed-local`. Fixtures refuse nonlocal or non-dev database names. Try **Kelly Bond** (plus-one) and **John Smith** (two matching parties). The fixture script opens RSVP in this local database only.
+Set the ignored `.env.local` `RSVP_DATABASE_URL` to that database, run `npm run rsvp:migrate`, then `npm run rsvp:seed-local`. Fixtures refuse nonlocal or non-dev database names. Try **Kelly Bond** (plus-one) and **John Smith** (two matching parties). The fixture script enables early declines in this local database only.
 
 Run `npm run test:rsvp` for validation tests; set `RSVP_TEST_DATABASE_URL` to local PostgreSQL to include database integration tests. Integration tests create and remove their own uniquely named database. They cover rollback, concurrent saves, idempotent retries, import preservation, event/party validation, plus-one identity, early declines and database-level deletion/audit protections.

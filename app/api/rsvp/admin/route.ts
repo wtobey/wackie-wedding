@@ -24,12 +24,10 @@ export async function POST(request: Request) {
     await requireAdmin();
     const input = object(await body(request, 1_100_000));
     if (input.action === 'mode') {
-      if (
-        input.mode !== 'closed' &&
-        input.mode !== 'declines_only' &&
-        input.mode !== 'open'
-      )
-        throw new RsvpError('Invalid RSVP mode.');
+      if (input.mode !== 'closed' && input.mode !== 'declines_only')
+        throw new RsvpError(
+          'RSVP can be closed or accept early declines. Yes responses are not available yet.',
+        );
       const mode = input.mode;
       return json(
         await withRsvpDatabase((db) =>

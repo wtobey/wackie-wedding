@@ -1,4 +1,4 @@
-import type { RsvpResponse, Submission } from './types';
+import type { RsvpResponse, Submission, DeclineSubmission } from './types';
 export class RsvpError extends Error {
   constructor(
     message: string,
@@ -91,5 +91,27 @@ export function parseSubmission(value: unknown): Submission {
     revision: revision(body.revision),
     requestId: id(body.requestId, 'the save request'),
     responses,
+  };
+}
+
+export function parseDecline(value: unknown): DeclineSubmission {
+  const input = object(value);
+  if (input.action !== 'decline' || 'responses' in input)
+    throw new RsvpError('We are only accepting declines right now.', 403);
+  if (
+    !Array.isArray(input.guestIds) ||
+    !input.guestIds.length ||
+    input.guestIds.length > 200
+  )
+    throw new RsvpError('Select who will not be attending.');
+  const guestIds = input.guestIds.map((value) => id(value, 'the guest'));
+  if (new Set(guestIds).size !== guestIds.length)
+    throw new RsvpError('Select each guest only once.');
+  return {
+    action: 'decline',
+    partyId: id(input.partyId, 'the party'),
+    revision: revision(input.revision),
+    requestId: id(input.requestId, 'the save request'),
+    guestIds,
   };
 }

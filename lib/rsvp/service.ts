@@ -5,6 +5,7 @@ import type {
   Party,
   RsvpMode,
   Submission,
+  DeclineSubmission,
   LookupResult,
   ImportPlan,
   ImportRow,
@@ -112,7 +113,7 @@ async function remember(
 }
 export async function submit(
   db: postgres.Sql,
-  input: Submission,
+  input: Submission | DeclineSubmission,
 ): Promise<Party> {
   return (await db.begin(async (tx) => {
     await lock(tx, `party:${input.partyId}`);
@@ -122,6 +123,7 @@ export async function submit(
     if (
       mode === 'closed' ||
       (mode === 'declines_only' &&
+        !('action' in input) &&
         input.responses.some((r) => r.attendance === 'yes'))
     )
       throw new RsvpError(
@@ -136,8 +138,28 @@ export async function submit(
         'Someone updated this party while you were editing. Look up your name again to review the latest responses.',
         409,
       );
+    const responses =
+      'action' in input
+        ? (input.guestIds.flatMap((guestId) => {
+            const guest = current.guests.find((g) => g.id === guestId);
+            if (!guest)
+              throw new RsvpError(
+                'This guest does not belong to your party.',
+                403,
+              );
+            if (!guest.events.length)
+              throw new RsvpError(
+                'Please contact Will or Jackie about this guest’s invitation.',
+              );
+            return guest.events.map((event) => ({
+              guestId,
+              eventId: event.eventId,
+              attendance: 'no' as const,
+            }));
+          }) as Submission['responses'])
+        : input.responses;
     const names = new Map<string, { first: string; last: string }>();
-    for (const r of input.responses) {
+    for (const r of responses) {
       const g = current.guests.find((g) => g.id === r.guestId);
       if (!g || !g.events.some((e) => e.eventId === r.eventId))
         throw new RsvpError('This guest is not invited to that event.', 403);
@@ -155,7 +177,7 @@ export async function submit(
         names.set(g.id, { first: r.firstName, last: r.lastName });
       }
     }
-    for (const r of input.responses) {
+    for (const r of responses) {
       const g = current.guests.find((g) => g.id === r.guestId)!;
       if (
         r.attendance === 'yes' &&

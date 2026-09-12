@@ -1,13 +1,13 @@
 'use client';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import type {
-  LookupResult,
-  Party,
-  RsvpMode,
-  Submission,
-} from '@/lib/rsvp/types';
+import type { LookupResult, Party, RsvpMode } from '@/lib/rsvp/types';
 import { request } from '@/lib/rsvp/client';
 import styles from './rsvp.module.css';
+function guestName(guest: Party['guests'][number]) {
+  return guest.firstName
+    ? `${guest.preferredName || guest.firstName} ${guest.lastName}`
+    : 'Your plus-one';
+}
 export default function RsvpForm() {
   const [mode, setMode] = useState<RsvpMode | null>(null),
     [party, setParty] = useState<Party | null>(null),
@@ -17,6 +17,8 @@ export default function RsvpForm() {
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [saved, setSaved] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [declinedNames, setDeclinedNames] = useState<string[]>([]);
   const pending = useRef<{ key: string; requestId: string } | null>(null);
   async function loadMode() {
     try {
@@ -58,6 +60,7 @@ export default function RsvpForm() {
       } else if (result.status === 'ambiguous') setChoices(result.parties);
       else {
         setParty(result.party);
+        setSelected([]);
         setMode(result.mode);
         setChoices([]);
         pending.current = null;
@@ -68,70 +71,17 @@ export default function RsvpForm() {
       setBusy(false);
     }
   }
-  function updateGuest(
-    guestId: string,
-    field: 'firstName' | 'lastName',
-    value: string,
-  ) {
-    setParty(
-      (p) =>
-        p && {
-          ...p,
-          guests: p.guests.map((g) =>
-            g.id === guestId ? { ...g, [field]: value } : g,
-          ),
-        },
-    );
-  }
-  function updateEvent(
-    guestId: string,
-    eventId: string,
-    field: string,
-    value: string,
-  ) {
-    setParty(
-      (p) =>
-        p && {
-          ...p,
-          guests: p.guests.map((g) =>
-            g.id === guestId
-              ? {
-                  ...g,
-                  events: g.events.map((e) =>
-                    e.eventId === eventId
-                      ? { ...e, [field]: value || null }
-                      : e,
-                  ),
-                }
-              : g,
-          ),
-        },
-    );
-  }
   async function save(event: FormEvent) {
     event.preventDefault();
     if (!party) return;
     setBusy(true);
     setError('');
     try {
-      const responses: Submission['responses'] = party.guests.flatMap((g) =>
-        g.events
-          .filter((e) => e.attendance !== null)
-          .map((e) => ({
-            guestId: g.id,
-            eventId: e.eventId,
-            attendance: e.attendance as 'yes' | 'no',
-            mealChoice: e.mealChoice,
-            dietaryRestrictions: e.dietaryRestrictions,
-            ...(g.isUnnamedPlusOne && (g.firstName || g.lastName)
-              ? { firstName: g.firstName || '', lastName: g.lastName || '' }
-              : {}),
-          })),
-      );
       const payload = {
+          action: 'decline',
           partyId: party.id,
           revision: party.revision,
-          responses,
+          guestIds: selected,
         },
         key = JSON.stringify(payload);
       if (pending.current?.key !== key)
@@ -140,6 +90,11 @@ export default function RsvpForm() {
         ...payload,
         requestId: pending.current.requestId,
       });
+      setDeclinedNames(
+        result.party.guests
+          .filter((g) => selected.includes(g.id))
+          .map(guestName),
+      );
       setParty(result.party);
       setSaved(true);
       pending.current = null;
@@ -171,16 +126,12 @@ export default function RsvpForm() {
       )}
       {mode && mode !== 'closed' && !party && (
         <>
-          <h2>
-            {mode === 'declines_only'
-              ? 'Already know you can’t make it?'
-              : 'We hope you can join us'}
-          </h2>
+          <h2>Already know you can’t make it?</h2>
           <p>
-            {mode === 'declines_only'
-              ? 'You can let us know now if you won’t be able to attend. Please wait for your invitation to RSVP yes.'
-              : 'Enter your name as it appears on your invitation to respond for your party.'}
+            If you won’t be able to join us for the wedding weekend, you can let
+            us know here. Otherwise, please wait for your invitation to RSVP.
           </p>
+          <p>Enter your first and last name to find your party.</p>
           <form
             className={styles.form}
             onSubmit={(e) => {
@@ -241,165 +192,55 @@ export default function RsvpForm() {
       )}
       {party && (
         <>
-          <h2>{party.greeting || party.displayName || 'Your party'}</h2>
+          <h2>{party.displayName || 'Your party'}</h2>
           {saved ? (
             <>
               <div role="status" className={styles.message}>
-                Your responses are saved. You can look up your name again any
-                time to make changes.
+                <p>Thank you for letting us know. We’ll miss you!</p>
+                <p>
+                  We’ve marked {declinedNames.join(' and ')} as not attending
+                  any wedding weekend events.
+                </p>
               </div>
-              <div className={styles.form}>
-                {party.guests.map((g) => (
-                  <div key={g.id}>
-                    <strong>
-                      {g.firstName
-                        ? `${g.firstName} ${g.lastName}`
-                        : 'Your plus-one'}
-                    </strong>
-                    {g.events.map((e) => (
-                      <p key={e.eventId}>
-                        {e.name}:{' '}
-                        {e.attendance === 'yes'
-                          ? 'Attending'
-                          : e.attendance === 'no'
-                            ? 'Not attending'
-                            : 'No response yet'}
-                      </p>
-                    ))}
-                  </div>
-                ))}
-                <button onClick={() => setSaved(false)}>Edit responses</button>
-              </div>
+              <p>If your plans change, please reach out to Will or Jackie.</p>
             </>
           ) : (
             <form className={styles.form} onSubmit={save}>
-              {mode === 'declines_only' && (
+              <fieldset className={styles.event} disabled={busy}>
+                <legend>Who won’t be able to attend?</legend>
                 <p>
-                  We’re accepting early declines. You can RSVP yes once
-                  invitations arrive.
+                  Select everyone who won’t be joining us. This will decline all
+                  wedding weekend events for each person selected.
                 </p>
-              )}
-              {party.guests.map((g) => (
-                <section key={g.id} className={styles.card}>
-                  <h2>
-                    {g.isUnnamedPlusOne
-                      ? 'Your plus-one'
-                      : `${g.preferredName || g.firstName} ${g.lastName}`}
-                  </h2>
-                  {g.isUnnamedPlusOne && (
-                    <div className={styles.row}>
-                      <label>
-                        First name
-                        <input
-                          disabled={busy}
-                          maxLength={100}
-                          value={g.firstName || ''}
-                          required={g.events.some(
-                            (e) => e.attendance === 'yes',
-                          )}
-                          onChange={(e) =>
-                            updateGuest(g.id, 'firstName', e.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        Last name
-                        <input
-                          disabled={busy}
-                          maxLength={100}
-                          value={g.lastName || ''}
-                          required={g.events.some(
-                            (e) => e.attendance === 'yes',
-                          )}
-                          onChange={(e) =>
-                            updateGuest(g.id, 'lastName', e.target.value)
-                          }
-                        />
-                      </label>
-                    </div>
-                  )}
-                  {!g.events.length && (
-                    <p>
-                      Please contact Will or Jackie about this guest’s
-                      invitation.
-                    </p>
-                  )}
-                  {g.events.map((e) => (
-                    <fieldset className={styles.event} key={e.eventId}>
-                      <legend>{e.name}</legend>
-                      <label>
-                        Will {g.preferredName || g.firstName || 'your plus-one'}{' '}
-                        attend?
-                        <select
-                          disabled={busy}
-                          value={e.attendance || ''}
-                          onChange={(v) =>
-                            updateEvent(
-                              g.id,
-                              e.eventId,
-                              'attendance',
-                              v.target.value,
-                            )
-                          }
-                        >
-                          <option value="" disabled>
-                            Choose a response
-                          </option>
-                          {(mode === 'open' || e.attendance === 'yes') && (
-                            <option value="yes">Yes, attending</option>
-                          )}
-                          <option value="no">No, unable to attend</option>
-                        </select>
-                      </label>
-                      {e.attendance === 'yes' && (
-                        <>
-                          <label>
-                            Meal preference (optional)
-                            <input
-                              disabled={busy}
-                              maxLength={100}
-                              value={e.mealChoice || ''}
-                              onChange={(v) =>
-                                updateEvent(
-                                  g.id,
-                                  e.eventId,
-                                  'mealChoice',
-                                  v.target.value,
-                                )
-                              }
-                            />
-                          </label>
-                          <label>
-                            Dietary restrictions (optional)
-                            <textarea
-                              disabled={busy}
-                              maxLength={1000}
-                              value={e.dietaryRestrictions || ''}
-                              onChange={(v) =>
-                                updateEvent(
-                                  g.id,
-                                  e.eventId,
-                                  'dietaryRestrictions',
-                                  v.target.value,
-                                )
-                              }
-                            />
-                          </label>
-                        </>
-                      )}
-                    </fieldset>
-                  ))}
-                </section>
-              ))}
-              <button
-                disabled={
-                  busy ||
-                  !party.guests.some((g) =>
-                    g.events.some((e) => e.attendance !== null),
-                  )
-                }
-              >
-                {busy ? 'Saving…' : 'Save responses'}
+                {party.guests.map((g) => (
+                  <label className={styles.check} key={g.id}>
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(g.id)}
+                      onChange={(event) =>
+                        setSelected((current) =>
+                          event.target.checked
+                            ? [...current, g.id]
+                            : current.filter((id) => id !== g.id),
+                        )
+                      }
+                    />
+                    <span>
+                      {guestName(g)}
+                      {g.events.length > 0 &&
+                        g.events.every((e) => e.attendance === 'no') && (
+                          <small> — already marked as not attending</small>
+                        )}
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
+              <p>
+                Anyone you leave unselected will keep their current response.
+                You don’t need to RSVP yes yet.
+              </p>
+              <button disabled={busy || !selected.length}>
+                {busy ? 'Saving…' : 'Confirm unable to attend'}
               </button>
             </form>
           )}
@@ -409,6 +250,7 @@ export default function RsvpForm() {
               disabled={busy}
               onClick={() => {
                 setParty(null);
+                setSelected([]);
                 setSaved(false);
                 setError('');
               }}

@@ -27,7 +27,7 @@ smith-couple,John and Sarah Smith,,Sarah,Smith,,false`;
       crypto.randomUUID(),
     );
     const [s] = await db`SELECT revision FROM wedding_rsvp.settings WHERE id=1`;
-    await setMode(db, 'open', s.revision);
+    await setMode(db, 'declines_only', s.revision);
     console.log('Local fixtures ready. Try Kelly Bond or John Smith.');
   } finally {
     await db.end();

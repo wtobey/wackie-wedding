@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeName, parseSubmission } from './validation';
+import { normalizeName, parseSubmission, parseDecline } from './validation';
 import { importRows, parseCsv, csvSource, encodeCsv } from './csv';
 test('normalization handles apostrophes, accents and repeated spaces', () => {
   assert.equal(normalizeName('  Wíll  '), 'will');
@@ -66,4 +66,24 @@ test('CSV exports with Windows line endings round trip through request validatio
     ['p', 'Party', 'Welcome!', 'Alex', 'Morgan', null, 'false'],
   ]);
   assert.equal(importRows(csvSource(csv), ['wedding'])[0].firstName, 'Alex');
+});
+
+test('current public RSVP accepts only an explicit decline for selected guests', () => {
+  const input = {
+    action: 'decline',
+    partyId: 'p',
+    revision: 1,
+    requestId: 'request',
+    guestIds: ['g'],
+  };
+  assert.deepEqual(parseDecline(input), input);
+  assert.throws(() => parseDecline({ ...input, guestIds: [] }));
+  assert.throws(() => parseDecline({ ...input, guestIds: ['g', 'g'] }));
+  assert.throws(() => parseDecline({ ...input, action: 'yes' }));
+  assert.throws(() =>
+    parseDecline({
+      ...input,
+      responses: [{ guestId: 'g', eventId: 'wedding', attendance: 'yes' }],
+    }),
+  );
 });

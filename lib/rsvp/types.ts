@@ -69,3 +69,11 @@ export type ImportPlan = {
   rows: number;
   warnings: string[];
 };
+
+export type DeclineSubmission = {
+  action: 'decline';
+  partyId: string;
+  revision: number;
+  requestId: string;
+  guestIds: string[];
+};

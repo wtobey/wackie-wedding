@@ -126,7 +126,6 @@ export default function RsvpAdmin() {
                 >
                   <option value="closed">Closed</option>
                   <option value="declines_only">Early declines only</option>
-                  <option value="open">Yes and no responses</option>
                 </select>
               </label>
               <button

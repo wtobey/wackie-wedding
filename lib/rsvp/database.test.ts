@@ -254,6 +254,61 @@ test(
         },
       );
       await t.test(
+        'one decline covers all invited events and preserves other guests and metadata',
+        async () => {
+          const preview = await previewImport(db, csv, ['brunch']);
+          await commitImport(
+            db,
+            csv,
+            ['brunch'],
+            preview.revision,
+            preview.hash,
+            randomUUID(),
+          );
+          const before = await party(db, 'p');
+          const input = {
+            action: 'decline' as const,
+            partyId: 'p',
+            revision: before.revision,
+            requestId: randomUUID(),
+            guestIds: [primary],
+          };
+          const after = await submit(db, input);
+          assert.equal(
+            after.guests.find((g) => g.id === primary)!.events.length,
+            2,
+          );
+          assert.ok(
+            after.guests
+              .find((g) => g.id === primary)!
+              .events.every((e) => e.attendance === 'no' && e.respondedAt),
+          );
+          assert.equal(
+            after.guests
+              .find((g) => g.id === primary)!
+              .events.find((e) => e.eventId === 'wedding')!.mealChoice,
+            'vegetarian',
+          );
+          assert.deepEqual(
+            after.guests.find((g) => g.id === plus),
+            before.guests.find((g) => g.id === plus),
+          );
+          assert.deepEqual(await submit(db, input), after);
+          await assert.rejects(() =>
+            submit(db, { ...input, requestId: randomUUID() }),
+          );
+          await assert.rejects(() =>
+            submit(db, {
+              ...input,
+              revision: after.revision,
+              requestId: randomUUID(),
+              guestIds: [primary, other],
+            }),
+          );
+          assert.deepEqual(await party(db, 'p'), after);
+        },
+      );
+      await t.test(
         'database rejects deletions, audit edits and invalid nameless guests',
         async () => {
           await assert.rejects(
