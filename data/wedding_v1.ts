@@ -27,7 +27,7 @@ export const weddingTravel = {
   other: "Other flight options are available through Denver, Las Vegas, Seattle, Dallas, Portland, San Diego.",
   bayArea: "You may also fly into OAK or SFO if you’d like to explore more of Northern California, just be aware that drive times to the venue can be highly variable depending on weekday traffic.",
   stay: "We’ve reserved space for our guests to stay with us at Dawn Ranch, where all the wedding weekend festivities will take place.",
-  booking: "A booking link will be shared in early 2027 to reserve rooms at a discounted rate. Please don't reach out to the hotel directly to book.",
+  booking: "All room bookings will be handled directly through our booking portal. A booking link will be shared in early 2027 to reserve rooms at a discounted rate. Please hold tight until then and don't reach out to the hotel directly to book.",
   alternatives: "In the event that all of the space at the venue is reserved, we will plan to share alternative hotel options at a later date.",
   shuttle: "Rideshare is available from the Sonoma County Airport to Dawn Ranch, but is not reliably available for the return trip. For guests departing on Sunday, we will arrange a private shuttle for transportation to the Sonoma County Airport.",
   parking: "There is parking available onsite for guests.",

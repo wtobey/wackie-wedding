@@ -587,12 +587,26 @@
 .weekendSchedule { padding-top: 0; }
 .venueAddress, .itineraryPage .venueAddress { padding: 48px 0; background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; margin-top: 64px; gap: 72px; }
 .stayGrid { padding: 64px 0 40px; align-items: stretch; gap: 64px; }
-.accommodationsIntro { border-bottom: 1px solid var(--line); }
-.accommodationsPanel { background: linear-gradient(to right, var(--peach) 50%, transparent 50%); }
+.accommodationsIntro { border-bottom: 0; }
+.accommodationsPanel { background: linear-gradient(to right, transparent 50%, var(--paper) 50%), linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top left / 560px 700px repeat; }
 .accommodationsPanel .stayGrid { padding: 0; gap: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.accommodationsPanel .photoBackdrop { padding: 64px 36px; margin: 0; width: 100%; max-width: none; position: sticky; top: 88px; }
-.accommodationsPanel .photoBackdrop > div { width: min(100%, 380px); flex-basis: 380px; }
-.accommodationsPanel .stayCopy { padding: 64px clamp(32px, 5vw, 88px) 72px; max-width: 680px; }
+.accommodationsPanel .photoBackdrop { padding: 64px 36px; margin: 0; width: 100%; max-width: none; position: relative; top: auto; align-self: stretch; display: block; }
+.accommodationsPanel .photoBackdrop > div { width: min(100%, 380px); margin-inline: auto; }
+.accommodationsPanel .stayCopy { padding: 64px clamp(28px, 4vw, 64px) 72px; width: 100%; min-width: 0; max-width: none; }
+.site .accommodationsPanel .stayCopy p { max-width: none; }
+@media (min-width: 761px) {
+  .accommodationsPanel .photoBackdrop {
+    position: sticky;
+    top: calc(var(--header-expanded-height) - var(--header-travel));
+    height: auto;
+    align-self: start;
+    display: flex;
+    align-items: center;
+    padding: 24px 36px;
+    background: linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top left / 560px 700px repeat;
+  }
+  .accommodationsPanel .photoBackdrop > div { position: static; flex: 0 1 auto; width: min(100%, 380px, max(180px, calc((100svh - 250px) / 1.05))); }
+}
 .site.site .accommodationsPanel .stayCopy h2 { color: var(--orange) !important; font-size: clamp(36px, 4vw, 52px); margin: 0 0 24px; }
 .site.site .stayCopy .staySubheading { font-family: var(--font-wedding); font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--orange); margin: 32px 0 12px; }
 .accommodationsPanel .stayCopy .note { margin-top: 32px; padding-top: 24px; }
@@ -685,6 +699,7 @@
 .site.site .transportationPage .airportCode { color: #889063 !important; }
 
 .transportationPage .travelRows h2 { color: #F1C166 !important; }
+.site .airportSummary .recommendedAirport { font: 700 clamp(22px, 2.5vw, 30px)/1.2 var(--font-main); color: var(--gold); letter-spacing: -.02em; text-transform: none; }
 .transportationPage .flightOrigins .flightOrigin h3 { color: #F7B98A !important; }
 
 .stayGrid + .nextPage a, .stayGrid ~ .nextPage a { color: #889063 !important; }
@@ -746,6 +761,10 @@
 }
 .site.site .faqContent h2 { color: #F1C166 !important; }
 .pageIntro.faqIntro { padding-top: clamp(28px, 4.39vw, 55px); padding-bottom: 27px; }
+.guernevilleFavorites { padding: 0 0 clamp(40px, 6vw, 72px); }
+.guernevilleFavorites h2 { max-width: none; margin-top: 0; text-wrap: wrap; }
+.site.site .guernevilleFavorites .staySubheading { margin-top: 0; }
+.site.site .tripExplore h2 { color: #CE5A45 !important; font-size: clamp(38px, 5.5vw, 68px); max-width: 920px; margin: 0 0 26px; text-wrap: balance; }
 .site.site .footer :is(.footerBrand, p) {
   font: 400 clamp(16px, 4.4vw, 25px)/1.2 var(--font-main) !important;
   color: var(--orange) !important;
@@ -758,7 +777,8 @@
 @media (max-width: 760px) {
   .accommodationsPanel { background: transparent; }
   .accommodationsPanel .stayGrid { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .accommodationsPanel .stayGrid > .photoBackdrop:first-child { position: static; padding: 28px 24px; background: var(--peach); }
+  .accommodationsPanel .stayGrid > .photoBackdrop:first-child { position: static; padding: 28px 24px; background: linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top left / 560px 700px repeat; }
+  .accommodationsPanel .photoBackdrop > div { position: static; width: min(100%, 360px); }
   .accommodationsPanel .stayCopy { padding: 36px 24px 48px; max-width: none; }
   .stayGrid { padding-top: 16px; gap: 28px; }
   .stayGrid > .photoBackdrop:first-child {

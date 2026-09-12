@@ -1,0 +1,9 @@
+.pageHeader { border-bottom: 1px solid var(--line); margin-bottom: 40px; }
+
+.linenSection {
+  width: 100%;
+  border-top: 1px solid var(--line);
+  background: linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top center / 560px 700px repeat;
+}
+
+.favoriteRow { margin-top: 32px; }

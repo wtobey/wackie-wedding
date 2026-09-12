@@ -107,7 +107,7 @@ export default function RsvpForm() {
   }
   return (
     <div className={styles.page}>
-      <h1>RSVP</h1>
+      <h1>Early RSVP</h1>
       {mode === null && !error && <p role="status">Loading RSVP…</p>}
       {error && (
         <div role="alert" className={styles.error}>

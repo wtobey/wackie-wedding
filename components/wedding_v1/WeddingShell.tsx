@@ -103,9 +103,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       const target = back!.getBoundingClientRect();
       const dx = source!.left + source!.width / 2 - target.left - target.width / 2;
       const dy = source!.top + source!.height / 2 - target.top - target.height / 2;
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const duration = reducedMotion ? 0 : 1800;
-      const options = { duration, easing: 'cubic-bezier(.45, 0, .2, 1)' };
+      const options = { duration: 1800, easing: 'cubic-bezier(.45, 0, .2, 1)' };
       await Promise.all([
         animate(mover!, [
           { transform: 'translate(0px, 0px) scale(1, 1)' },
@@ -131,8 +129,8 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       mover!.style.visibility = 'hidden';
       const surroundings = site!.querySelectorAll<HTMLElement>(`.${styles.headerSpace}, footer, .${styles.hero} > :not([data-home-invitation])`);
       await Promise.all([
-        animate(gate!, [{ opacity: 1 }, { opacity: 0 }], { duration: reducedMotion ? 300 : 700 }),
-        ...Array.from(surroundings, element => animate(element, [{ opacity: 0 }, { opacity: 1 }], { duration: reducedMotion ? 300 : 700 })),
+        animate(gate!, [{ opacity: 1 }, { opacity: 0 }], { duration: 700 }),
+        ...Array.from(surroundings, element => animate(element, [{ opacity: 0 }, { opacity: 1 }], { duration: 700 })),
       ]);
       if (!cancelled) setUnlocking(false);
     }
