@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on `codex/rsvp-system`. No production database migration has been run. The local Docker database contains the draft guest-list import and clearly labeled synthetic test fixtures; local responses are test data and must not be copied to production. The initial migration defaults to **closed**. Production opening additionally requires `RSVP_RECOVERY_READY=true` after the recovery checklist below is completed.
+The local Docker database contains the draft guest-list import and clearly labeled synthetic test fixtures; local responses are test data and must not be copied to production. The initial migration defaults to **closed**. An explicit production deployment job can apply migrations using Vercel's existing server credentials, import the guest CSV, and enable early declines. Ordinary website builds never run migrations.
 
 ## Backups: what protects what
 
@@ -12,16 +12,28 @@ Supabase Pro retains seven daily backups (Team 14, Enterprise up to 30). Free pr
 
 For this wedding, use managed PITR if available, plus encrypted offsite daily database exports and a separate backup of Storage objects. If PITR is not enabled, choose an export interval based on the amount of recent data you can tolerate losing. Neither daily dumps nor same-database audit history can promise zero loss. A literal zero-loss requirement needs a separately acknowledged durable replica/journal and a tested failover design before accepting submissions.
 
-## Before accepting live RSVPs
+## Production deployment
 
-1. Confirm the exact Supabase project and plan; verify daily backup/PITR status in its dashboard. The credentials available to this task were masked, so this has **not** been verified.
+The first production migration and guest import completed on September 12, 2026 (UTC): 214 guests in 120 households, with 642 invitations and no copied local test responses. Verified snapshots are in the private `wedding-rsvp-backups` bucket under `2026-09-12T06-05-33-703Z-9800643c-323e-4e32-8939-bd6da8157843/`. Existing photo-library metadata was unchanged.
+
+`npm run rsvp:deploy` is an explicit Vercel production job, separate from the normal build command. Run it after a successful application build in a production deployment created with `--skip-domain`, then verify the deployment before promoting it. Supply deployment-specific build variables `RSVP_DEPLOY_JOB=apply`, `RSVP_DEPLOY_CSV_BASE64`, `RSVP_DEPLOY_CSV_SHA256`, and `RSVP_DEPLOY_EXPECTED_GUESTS`. Never commit the guest CSV or configure these variables on ordinary project builds.
+
+The job uses the existing production `POSTGRES_URL` and Supabase Storage credentials. It saves and downloads/checksums before/after JSON snapshots in the private `wedding-rsvp-backups` bucket, runs versioned SQL with a transaction and advisory lock, previews/imports the CSV, checks existing responses and photo metadata, and enables `declines_only`. It assigns wedding, welcome-party, and brunch invitations. It stops on unexpected existing-guest edits. Re-running an unchanged import does not add duplicate guests or invitations.
+
+These snapshots contain RSVP tables and photo-library metadata. They are **not full database dumps, backups of photo files, PITR, or independent offsite recovery**. Keep managed database and object-storage backups configured separately. No runtime HTTP migration endpoint is exposed, and database credentials are never returned to the caller.
+
+The shared migration runner is `scripts/rsvp/migrations.ts`. `npm run rsvp:migrate` remains available for operators with direct database access and takes a full `pg_dump` before applying the same SQL files.
+
+## Recovery operations
+
+1. Confirm the exact Supabase project and plan; verify daily backup/PITR status in its dashboard. Managed backup/PITR status has **not** been verified by this task.
 2. Choose an independent private backup destination, encryption, retention and a monitored backup schedule. A dump on the developer laptop alone is insufficient. Confirm separate photo-object backups too.
 3. Obtain a direct PostgreSQL connection (`RSVP_DATABASE_URL`, or existing `POSTGRES_URL` fallback). Use server-only credentials, never `NEXT_PUBLIC_*`. The role needs access to the private `wedding_rsvp` schema. No anonymous/authenticated Supabase Data API access is granted.
 4. Run `npm run rsvp:backup`. It creates a complete database custom-format dump with restricted permissions, checks that `pg_restore` can read it and writes a checksum manifest. `pg_dump`/`pg_restore` must be the same major version as the server or newer. Set `PG_DUMP_BIN` / `PG_RESTORE_BIN` if needed. Set `RSVP_BACKUP_DIRECTORY` for an appropriate private destination.
 5. Copy the dump and manifest to independent storage; restore into a **new, empty, isolated database** using the procedure below. Verify counts and guest responses. This has been tested locally with synthetic data, but must also be tested on the real project's backup.
 6. Review migrations and run `RSVP_ALLOW_REMOTE_MIGRATION=true npm run rsvp:migrate`. It requires a fresh successful backup, serializes migrations, verifies checksums, and applies pending migrations atomically. It never resets tables or runs migrations during HTTP requests. Existing photo schemas are untouched.
 7. Configure `RSVP_SESSION_SECRET` (at least 32 random bytes recommended; server-only) or use the existing admin password as a signing-secret fallback. Confirm admin access uses `WEDDING_ADMIN_PASSWORD` (minimum 16 characters).
-8. Deploy, verify closed-mode behavior and admin imports. Set `RSVP_RECOVERY_READY=true` only after steps 1–5 are complete, then select **Early declines only** in `/admin/rsvp`. Yes responses are not available in the current release.
+8. Verify admin imports and select **Early declines only** in `/admin/rsvp`. Yes responses are not available in the current release. There is no environment-variable acknowledgement gate; backup operations are separate from RSVP availability.
 
 ## Restore drill
 

@@ -10,6 +10,7 @@
     "seed": "tsx scripts/seed-polaroids.ts",
     "test-db": "tsx scripts/test-db.ts",
     "rsvp:migrate": "tsx scripts/rsvp/migrate.ts",
+    "rsvp:deploy": "tsx scripts/rsvp/deploy.ts",
     "rsvp:backup": "tsx scripts/rsvp/backup.ts",
     "rsvp:seed-local": "tsx scripts/rsvp/seed-local.ts",
     "test:rsvp": "tsx --test lib/rsvp/*.test.ts"

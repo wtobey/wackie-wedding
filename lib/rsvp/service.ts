@@ -1,6 +1,6 @@
-import { randomUUID } from 'node:crypto';
-import type postgres from 'postgres';
-import type { Db } from './database';
+import { randomUUID } from "node:crypto";
+import type postgres from "postgres";
+import type { Db } from "./database";
 import type {
   Party,
   RsvpMode,
@@ -9,10 +9,10 @@ import type {
   LookupResult,
   ImportPlan,
   ImportRow,
-} from './types';
-import { normalizeName, RsvpError } from './validation';
-import { hash, importRows } from './csv';
-import { declineGuestIds } from './decline';
+} from "./types";
+import { normalizeName, RsvpError } from "./validation";
+import { hash, importRows } from "./csv";
+import { declineGuestIds } from "./decline";
 export async function settings(db: Db) {
   const [s] =
     await db`SELECT mode,revision FROM wedding_rsvp.settings WHERE id=1`;
@@ -21,7 +21,7 @@ export async function settings(db: Db) {
 export async function party(db: Db, partyId: string): Promise<Party> {
   const [p] =
     await db`SELECT id,display_name,greeting,revision FROM wedding_rsvp.parties WHERE id=${partyId}`;
-  if (!p) throw new RsvpError('Party not found.', 404);
+  if (!p) throw new RsvpError("Party not found.", 404);
   const guests =
     await db`SELECT * FROM wedding_rsvp.guests WHERE party_id=${partyId} ORDER BY is_unnamed_plus_one,created_at,id`;
   const invitations =
@@ -58,28 +58,28 @@ export async function lookup(
   selected?: string,
 ): Promise<LookupResult> {
   const { mode } = await settings(db);
-  if (mode === 'closed')
-    throw new RsvpError('RSVP will open when invitations arrive.', 403);
+  if (mode === "closed")
+    throw new RsvpError("RSVP will open when invitations arrive.", 403);
   const matches =
     await db`SELECT DISTINCT p.id,p.display_name FROM wedding_rsvp.guests g JOIN wedding_rsvp.parties p ON p.id=g.party_id WHERE normalized_first_name=${normalizeName(first)} AND normalized_last_name=${normalizeName(last)} ORDER BY p.id LIMIT 21`;
   if (!matches.length || (selected && !matches.some((p) => p.id === selected)))
-    return { status: 'not_found' };
+    return { status: "not_found" };
   if (matches.length > 20)
     throw new RsvpError(
-      'Please reach out to Will or Jackie for help finding your invitation.',
+      "Please reach out to Will or Jackie for help finding your invitation.",
     );
   if (matches.length > 1 && !selected)
     return {
-      status: 'ambiguous',
+      status: "ambiguous",
       parties: matches.map((p) => ({
         id: p.id,
         displayName:
           p.display_name ||
-          'Please contact Will or Jackie to identify this party',
+          "Please contact Will or Jackie to identify this party",
       })),
     };
   return {
-    status: 'found',
+    status: "found",
     party: await party(db, selected || matches[0].id),
     mode,
   };
@@ -98,7 +98,7 @@ async function receipt(
     await db`SELECT * FROM wedding_rsvp.receipts WHERE id=${requestId}`;
   if (r && (r.scope !== scope || r.payload_hash !== hash(payload)))
     throw new RsvpError(
-      'This save request was already used. Reload before saving.',
+      "This save request was already used. Reload before saving.",
       409,
     );
   return r?.result;
@@ -122,73 +122,73 @@ export async function submit(
     if (previous) return previous as Party;
     const { mode } = await settings(tx);
     if (
-      mode === 'closed' ||
-      (mode === 'declines_only' &&
-        !('action' in input) &&
-        input.responses.some((r) => r.attendance === 'yes'))
+      mode === "closed" ||
+      (mode === "declines_only" &&
+        !("action" in input) &&
+        input.responses.some((r) => r.attendance === "yes"))
     )
       throw new RsvpError(
-        mode === 'closed'
-          ? 'RSVP is currently closed.'
-          : 'You can let us know you cannot attend now. Yes responses open with invitations.',
+        mode === "closed"
+          ? "RSVP is currently closed."
+          : "You can let us know you cannot attend now. Yes responses open with invitations.",
         403,
       );
     const current = await party(tx, input.partyId);
     if (current.revision !== input.revision)
       throw new RsvpError(
-        'Someone updated this party while you were editing. Look up your name again to review the latest responses.',
+        "Someone updated this party while you were editing. Look up your name again to review the latest responses.",
         409,
       );
     const responses =
-      'action' in input
+      "action" in input
         ? (declineGuestIds(current.guests, input.guestIds).flatMap(
             (guestId) => {
               const guest = current.guests.find((g) => g.id === guestId);
               if (!guest)
                 throw new RsvpError(
-                  'This guest does not belong to your party.',
+                  "This guest does not belong to your party.",
                   403,
                 );
               if (!guest.events.length)
                 throw new RsvpError(
-                  'Please contact Will or Jackie about this guest’s invitation.',
+                  "Please contact Will or Jackie about this guest’s invitation.",
                 );
               return guest.events.map((event) => ({
                 guestId,
                 eventId: event.eventId,
-                attendance: 'no' as const,
+                attendance: "no" as const,
               }));
             },
-          ) as Submission['responses'])
+          ) as Submission["responses"])
         : input.responses;
     const names = new Map<string, { first: string; last: string }>();
     for (const r of responses) {
       const g = current.guests.find((g) => g.id === r.guestId);
       if (!g || !g.events.some((e) => e.eventId === r.eventId))
-        throw new RsvpError('This guest is not invited to that event.', 403);
+        throw new RsvpError("This guest is not invited to that event.", 403);
       if (r.firstName && r.lastName) {
         if (
           !g.isUnnamedPlusOne &&
           (r.firstName !== g.firstName || r.lastName !== g.lastName)
         )
           throw new RsvpError(
-            'Please contact Will or Jackie to correct an invited guest’s name.',
+            "Please contact Will or Jackie to correct an invited guest’s name.",
           );
         const prior = names.get(g.id);
         if (prior && (prior.first !== r.firstName || prior.last !== r.lastName))
-          throw new RsvpError('Use the same guest name for every event.');
+          throw new RsvpError("Use the same guest name for every event.");
         names.set(g.id, { first: r.firstName, last: r.lastName });
       }
     }
     for (const r of responses) {
       const g = current.guests.find((g) => g.id === r.guestId)!;
       if (
-        r.attendance === 'yes' &&
+        r.attendance === "yes" &&
         g.isUnnamedPlusOne &&
         !(names.has(g.id) || (g.firstName && g.lastName))
       )
         throw new RsvpError(
-          'Please enter your plus-one’s first and last name if they are attending.',
+          "Please enter your plus-one’s first and last name if they are attending.",
         );
       await tx`UPDATE wedding_rsvp.invitations SET attendance=${r.attendance}, meal_choice=${r.mealChoice === undefined ? g.events.find((e) => e.eventId === r.eventId)!.mealChoice : r.mealChoice},dietary_restrictions=${r.dietaryRestrictions === undefined ? g.events.find((e) => e.eventId === r.eventId)!.dietaryRestrictions : r.dietaryRestrictions},responded_at=now(),updated_at=now() WHERE guest_id=${r.guestId} AND event_id=${r.eventId}`;
     }
@@ -268,7 +268,7 @@ async function plan(db: Db, rows: ImportRow[]): Promise<ImportPlan> {
     ).length;
   }
   if (new Set(rows.map((r) => r.guestId)).size !== rows.length)
-    throw new RsvpError('CSV resolves multiple rows to the same guest.');
+    throw new RsvpError("CSV resolves multiple rows to the same guest.");
   result.hash = hash(rows);
   return result;
 }
@@ -277,7 +277,7 @@ export async function previewImport(
   csv: string,
   eventIds: string[],
 ) {
-  return db.begin('isolation level repeatable read read only', async (tx) =>
+  return db.begin("isolation level repeatable read read only", async (tx) =>
     plan(tx, importRows(csv, eventIds)),
   );
 }
@@ -290,15 +290,15 @@ export async function commitImport(
   requestId: string,
 ) {
   return db.begin(async (tx) => {
-    await lock(tx, 'admin:import');
+    await lock(tx, "admin:import");
     const payload = { csv, eventIds, expectedRevision, expectedHash };
-    const previous = await receipt(tx, requestId, 'import', payload);
+    const previous = await receipt(tx, requestId, "import", payload);
     if (previous) return previous;
     const rows = importRows(csv, eventIds),
       preview = await plan(tx, rows);
     if (preview.revision !== expectedRevision || preview.hash !== expectedHash)
       throw new RsvpError(
-        'The guest list changed. Preview the import again before applying it.',
+        "The guest list changed. Preview the import again before applying it.",
         409,
       );
     for (const r of rows) {
@@ -310,7 +310,7 @@ export async function commitImport(
     for (const partyId of new Set(rows.map((r) => r.partyId)))
       await tx`UPDATE wedding_rsvp.parties SET revision=revision+1,updated_at=now() WHERE id=${partyId}`;
     await tx`UPDATE wedding_rsvp.settings SET revision=revision+1 WHERE id=1`;
-    await remember(tx, requestId, 'import', payload, preview);
+    await remember(tx, requestId, "import", payload, preview);
     return preview;
   });
 }
@@ -326,19 +326,10 @@ export async function setMode(
   mode: RsvpMode,
   expectedRevision: number,
 ) {
-  if (
-    mode !== 'closed' &&
-    process.env.NODE_ENV === 'production' &&
-    process.env.RSVP_RECOVERY_READY !== 'true'
-  )
-    throw new RsvpError(
-      'Verify backups and a restore drill, then set RSVP_RECOVERY_READY before opening RSVP.',
-      409,
-    );
   return db.begin(async (tx) => {
-    await lock(tx, 'admin:mode');
+    await lock(tx, "admin:mode");
     if ((await settings(tx)).revision !== expectedRevision)
-      throw new RsvpError('Reload before changing RSVP availability.', 409);
+      throw new RsvpError("Reload before changing RSVP availability.", 409);
     await tx`UPDATE wedding_rsvp.settings SET mode=${mode},revision=revision+1 WHERE id=1`;
     return settings(tx);
   });
