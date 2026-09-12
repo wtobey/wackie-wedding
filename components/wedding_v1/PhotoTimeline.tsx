@@ -69,7 +69,7 @@ function PhotoDialog({ photos, initialIndex, onClose }: { photos: TimelinePhoto[
   }}>
     <div className={styles.lightboxTop}><span aria-live="polite">{index + 1} / {photos.length}</span><button autoFocus onClick={onClose} aria-label="Close photo viewer">Close ×</button></div>
     <div className={styles.lightboxImage}><Photo key={photo.id} photo={photo} large/></div>
-    <div className={styles.lightboxBottom}><button onClick={() => move(-1)} aria-label="Previous photo" disabled={photos.length < 2}>←</button><p>{photo.caption?.trim() || photoDateLabel(photo.photoDate)}</p><button onClick={() => move(1)} aria-label="Next photo" disabled={photos.length < 2}>→</button></div>
+    <div className={styles.lightboxBottom}><button onClick={() => move(-1)} aria-label="Previous photo" disabled={photos.length < 2}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="14 6 8 12 14 18"/></svg></button><p>{photo.caption?.trim() || photoDateLabel(photo.photoDate)}</p><button onClick={() => move(1)} aria-label="Next photo" disabled={photos.length < 2}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="10 6 16 12 10 18"/></svg></button></div>
   </dialog>;
 }
 

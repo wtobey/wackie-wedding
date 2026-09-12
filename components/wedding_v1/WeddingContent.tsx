@@ -26,5 +26,5 @@ export function WeekendEvents({ compact = false }: { compact?: boolean }) {
 }
 
 export function NextPage({ href, label, showEyebrow = true }: { href: string; label: string; showEyebrow?: boolean }) {
-  return <div className={styles.nextPage}>{showEyebrow && <p className={styles.eyebrow}>A little more planning</p>}<Link href={href}>{label}<svg className={styles.nextPageArrow} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 11 11 5M5 5h6v6"/></svg></Link></div>;
+  return <div className={styles.nextPage}>{showEyebrow && <p className={styles.eyebrow}>A little more planning</p>}<Link href={href}>{label}</Link></div>;
 }

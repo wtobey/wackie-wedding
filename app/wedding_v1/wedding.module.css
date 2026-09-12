@@ -4,6 +4,7 @@
   --header-travel: 46px;
   --header-height: calc(110px - 46px * var(--header-progress));
   --font-wedding: "postea-greek-vf", sans-serif;
+  --font-polaroid: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
   --paper: #faf7f2;
   --ink: color-mix(in srgb, var(--espresso) 80%, var(--paper));
   --muted: var(--ink);
@@ -77,7 +78,7 @@
 .polaroid { background: var(--paper-texture), var(--paper); padding: 10px 10px 0; border-radius: 2px; box-shadow: 0 5px 14px #623d2514, 0 1px 3px #623d2512; }
 .photoFrame { position: relative; aspect-ratio: 1 / 1; background: color-mix(in srgb, #889063 15%, var(--paper)); overflow: hidden; }
 .photoFrame img { object-fit: cover; }
-.polaroid figcaption { padding: 14px 2px 19px; font-size: 14px; font-style: italic; text-align: center; }
+.polaroid figcaption { font-family: var(--font-polaroid); font-weight: 400; padding: 14px 2px 19px; font-size: 14px; font-style: italic; text-align: center; }
 .weekendSection { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 64px max(6%, calc((100vw - 1120px) / 2)); background: var(--paper-texture), var(--peach-panel); }
 .patternedWeekend { padding: 48px max(4%, calc((100vw - 1200px) / 2)); background: url('/wedding_v1-assets/wedding-meadow-pattern.png') center / 420px repeat, var(--soft-peach); background-blend-mode: multiply; }
 .weekendPaper { padding: 40px; background: var(--paper); }
@@ -136,7 +137,6 @@
 .venueAddress > p { font-size: 14px; }
 .nextPage { padding: 60px 0; text-align: center; }
 .nextPage a { display: inline-flex; align-items: center; gap: 10px; font-size: clamp(23px, 3vw, 34px); letter-spacing: -.03em; margin-top: 15px; }
-.nextPageArrow { width: .6em; height: .6em; flex-shrink: 0; }
 .nextPage a:hover { color: var(--orange); }
 .stayGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 75px; align-items: center; padding: 12px 0 35px; }
 .stayGrid .polaroid { transform: rotate(-3deg); }
@@ -216,7 +216,7 @@
 .galleryPhoto:nth-child(3n+1) { transform: rotate(-2deg); }
 .galleryPhoto:nth-child(3n) { transform: rotate(2deg); }
 .galleryPhoto:hover { transform: rotate(0) translateY(-5px); }
-.galleryCaption { display: block; padding: 17px 6px 21px; font-size: 14px; overflow-wrap: anywhere; }
+.galleryCaption { font-family: var(--font-polaroid); font-style: italic; font-weight: 400; display: block; padding: 17px 6px 21px; font-size: 14px; overflow-wrap: anywhere; }
 .galleryCaption small { display: block; color: var(--muted); margin-top: 6px; font: 400 10px/1.5 var(--font-wedding); }
 .photoFallback { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; font-size: 17px; color: var(--muted); }
 .photoFallback svg { width: 70px; }
@@ -375,7 +375,7 @@
 .droppedPhoto[data-ready="false"] { visibility: hidden; animation: none; }
 .droppedPhoto > div { aspect-ratio: 1; position: relative; background: color-mix(in srgb, #889063 15%, var(--paper)); overflow: hidden; }
 .droppedPhoto img { object-fit: cover; }
-.droppedPhoto figcaption { height: 36px; padding-top: 10px; text-align: center; color: var(--muted); font: italic 11px/1.3 Georgia, serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.droppedPhoto figcaption { height: 36px; padding-top: 10px; text-align: center; color: var(--muted); font: italic 11px/1.3 var(--font-polaroid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dropPhotoHint { position: relative; z-index: 3; display: block; margin: 16px auto 0; padding: 8px; border: 0; background: transparent; color: var(--muted); font-size: 13px; }
 @media (max-width: 760px) {
   .hero { cursor: auto; }
@@ -588,30 +588,94 @@
 .venueAddress, .itineraryPage .venueAddress { padding: 48px 0; background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; margin-top: 64px; gap: 72px; }
 .stayGrid { padding: 64px 0 40px; align-items: stretch; gap: 64px; }
 .accommodationsIntro { border-bottom: 0; }
-.accommodationsPanel { background: linear-gradient(to right, transparent 50%, var(--paper) 50%), linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top left / 560px 700px repeat; }
+.accommodationsPanel { background: linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top left / 560px 700px repeat; }
 .accommodationsPanel .stayGrid { padding: 0; gap: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .accommodationsPanel .photoBackdrop { padding: 64px 36px; margin: 0; width: 100%; max-width: none; position: relative; top: auto; align-self: stretch; display: block; }
 .accommodationsPanel .photoBackdrop > div { width: min(100%, 380px); margin-inline: auto; }
 .accommodationsPanel .stayCopy { padding: 64px clamp(28px, 4vw, 64px) 72px; width: 100%; min-width: 0; max-width: none; }
 .site .accommodationsPanel .stayCopy p { max-width: none; }
 @media (min-width: 761px) {
+  .accommodationsPanel .stayGrid {
+    max-width: 1180px;
+    margin-inline: auto;
+    padding: 56px clamp(24px, 5vw, 64px);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(32px, 4vw, 56px);
+    align-items: start;
+    background: transparent;
+  }
+  .accommodationsPanel .stayCopy {
+    width: calc(100% - 44px);
+    max-width: 440px;
+    aspect-ratio: 440 / 517;
+    justify-self: center;
+    margin-top: 28px;
+    padding: 28px;
+    background: linear-gradient(145deg, #fffffe, #fffcf8);
+    border-radius: 2px;
+    box-shadow: 0 5px 16px #68554320, 0 1px 3px #0000000a;
+  }
+  .site.site .accommodationsPanel .stayGrid .stayCopy h2 { font-size: 36px; margin-bottom: 20px; }
+  .site.site .accommodationsPanel .stayCopy p { font-size: 15px; line-height: 1.65; }
+  .site.site .accommodationsPanel .stayCopy address { font-size: 14px; }
   .accommodationsPanel .photoBackdrop {
     position: sticky;
-    top: calc(var(--header-expanded-height) - var(--header-travel));
+    top: calc(var(--header-expanded-height) - var(--header-travel) + 16px);
     height: auto;
     align-self: start;
     display: flex;
     align-items: center;
-    padding: 24px 36px;
-    background: linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top left / 560px 700px repeat;
+    padding: 0;
+    background: transparent;
   }
-  .accommodationsPanel .photoBackdrop > div { position: static; flex: 0 1 auto; width: min(100%, 380px, max(180px, calc((100svh - 250px) / 1.05))); }
+  .accommodationsPanel .photoBackdrop > div { position: static; flex: 0 1 auto; width: min(100%, 484px); }
+  .site.site .accommodationsPanel .stayCopy .staySubheading {
+    font-family: var(--font-main);
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--green);
+    margin: 28px 0 12px;
+  }
 }
+.stayBooking {
+  display: grid;
+  grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+  column-gap: 0;
+  padding-block: 36px 64px;
+  margin-top: 40px;
+  border-top: 1px solid var(--line);
+}
+.stayBooking:first-child { border-top: 0; }
+.site.site .stayBooking h2 { margin: 0; color: var(--orange) !important; font-size: 30px; }
+.site .stayBooking p { margin: 0; padding-left: clamp(48px, 5vw, 72px); max-width: none; font-size: 15px; }
+@media (max-width: 760px) {
+  .stayBooking { display: block; margin-top: 0; padding-block: 28px 48px; }
+  .site.site .stayBooking h2 { font-size: 26px; margin-bottom: 14px; }
+  .site .stayBooking p { padding-left: 0; }
+}
+.stayBooking:first-child { padding-bottom: 32px; }
+.stayBooking + .stayBooking { margin-top: 0; padding-top: 32px; }
+
 .site.site .accommodationsPanel .stayCopy h2 { color: var(--orange) !important; font-size: clamp(36px, 4vw, 52px); margin: 0 0 24px; }
 .site.site .stayCopy .staySubheading { font-family: var(--font-wedding); font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--orange); margin: 32px 0 12px; }
 .accommodationsPanel .stayCopy .note { margin-top: 32px; padding-top: 24px; }
 .site.site .accommodationsPanel .note h3 { font-size: 26px; color: var(--orange); margin-bottom: 14px; }
 .pageIntro.accommodationsIntro h1 { max-width: none; font-size: clamp(18px, 4.6vw, 57px); white-space: nowrap; }
+@media (max-width: 760px) {
+  .site.site .pageIntro :is(h1, h2) {
+    max-width: 100%;
+    margin-inline: 0;
+    text-align: left;
+    white-space: normal;
+    text-wrap: balance;
+    font-size: clamp(32px, 8.5vw, 46px);
+  }
+  .site.site .pageIntro :is(h1, h2):only-child {
+    margin-block: 0;
+  }
+}
 .photoBackdrop {
   min-width: 0;
   background: transparent;
@@ -776,10 +840,25 @@
 
 @media (max-width: 760px) {
   .accommodationsPanel { background: transparent; }
+  .site.site .accommodationsPanel .stayCopy .staySubheading {
+    font-family: var(--font-main);
+    font-size: 25px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0;
+    text-transform: none;
+  }
   .accommodationsPanel .stayGrid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .accommodationsPanel .stayGrid > .photoBackdrop:first-child { position: static; padding: 28px 24px; background: linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top left / 560px 700px repeat; }
   .accommodationsPanel .photoBackdrop > div { position: static; width: min(100%, 360px); }
-  .accommodationsPanel .stayCopy { padding: 36px 24px 48px; max-width: none; }
+  .accommodationsPanel .stayCopy {
+    width: 100%;
+    margin: 0;
+    padding: 36px 24px 48px;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+  }
   .stayGrid { padding-top: 16px; gap: 28px; }
   .stayGrid > .photoBackdrop:first-child {
     width: 100%;

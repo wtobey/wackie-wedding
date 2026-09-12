@@ -18,6 +18,6 @@ export default function ClassicWeddingHero() {
       </div>
       <div className={styles.heroRight}><Doodle kind="sun" className={styles.heroSun}/></div>
     </div>
-    <div className={styles.heroFoot}><span>Good company. Great weekend.</span><a href="#weekend" aria-label="Scroll to the weekend">↓</a></div>
+    <div className={styles.heroFoot}><span>Good company. Great weekend.</span><a href="#weekend" aria-label="Scroll to the weekend">The weekend</a></div>
   </FallingWeddingPhotos>;
 }

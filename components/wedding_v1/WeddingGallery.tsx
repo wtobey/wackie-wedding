@@ -31,7 +31,7 @@ export default function WeddingGallery() {
     <div className={styles.galleryStatus} aria-live="polite">
       <h2>{state.error ? "The album needs a moment." : "More memories soon."}</h2>
       <p>{state.error ? "We couldn’t load the full photo collection. Please give it another try." : "We’re adding our favorite photos. Come back for a peek."}</p>
-      {state.error && <button className={styles.button} onClick={retry}>Try again ↗</button>}
+      {state.error && <button className={styles.button} onClick={retry}>Try again</button>}
     </div>
   </>;
 }

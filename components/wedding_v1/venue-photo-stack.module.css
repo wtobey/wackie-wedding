@@ -10,7 +10,7 @@
 .stack[data-flipping="true"] .card[data-depth="2"] { animation-name: settleMiddle; }
 .frame { position: relative; display: block; aspect-ratio: 1 / 1.05; overflow: hidden; background: #f3eadb; }
 .frame img { object-fit: cover; }
-.caption { display: block; min-height: 66px; padding: 20px 4px 24px; font: italic 17px/1.25 "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive; text-align: center; letter-spacing: .01em; }
+.caption { display: block; min-height: 66px; padding: 20px 4px 24px; font: italic 17px/1.25 var(--font-polaroid); text-align: center; letter-spacing: .01em; }
 .hint { text-align: center; font-size: 12px; color: var(--muted); }
 @media (min-width: 761px) {
   .album p.hint { color: var(--paper); }
