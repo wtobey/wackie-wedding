@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import { isAdmin, sameOrigin } from '@/lib/wedding-admin/auth';
 import { exclusive, readLibrary, saveMedia, deleteMedia, writeLibrary } from '@/lib/wedding-admin/store';
 import { photoTimestamp } from '@/lib/wedding-timeline';
+import { removeLibraryPhoto } from '@/lib/wedding-admin/delete';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 async function bounded(request: Request, limit: number) {
@@ -17,6 +18,22 @@ export async function GET() {
   if (!await isAdmin()) return new Response(null, { status: 401 });
   try { return Response.json(await readLibrary(), { headers: { 'Cache-Control': 'no-store' } }); }
   catch (error) { console.error('Photo library unavailable', error instanceof Error ? error.message : 'Unknown storage error'); return Response.json({ error: 'The photo library could not be loaded. Please retry.' }, { status: 503 }); }
+}
+export async function DELETE(request: Request) {
+  if (!await isAdmin()) return Response.json({ error: 'Your admin session expired. Sign in again.' }, { status: 401 });
+  if (!sameOrigin(request)) return Response.json({ error: 'Invalid request origin.' }, { status: 403 });
+  try {
+    const body = await (await bounded(request, 4096)).json();
+    await readLibrary();
+    return await exclusive(async () => {
+      const updated = removeLibraryPhoto(await readLibrary(), body?.id, body?.revision);
+      // Keep stored image files intact; other records may reference the same asset.
+      await writeLibrary(updated);
+      return Response.json(updated);
+    });
+  } catch (error) {
+    return Response.json({ error: error instanceof Error ? error.message : 'Could not delete the photo.' }, { status: error instanceof LibraryConflict ? 409 : 400 });
+  }
 }
 export async function PUT(request: Request) {
   if (!await isAdmin()) return new Response(null, { status: 401 });

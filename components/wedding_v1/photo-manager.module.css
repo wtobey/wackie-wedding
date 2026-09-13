@@ -27,3 +27,8 @@
 .manager .cropControls p { font-size: 12px; line-height: 1.5; margin-block: 12px; }
 .cropControls input[type="range"] { width: 100%; padding: 0; min-height: 32px; accent-color: var(--orange); }
 .cropControls button { margin-top: 12px; }
+
+.manager .deleteButton { color: #a43224; border-color: #a43224; cursor: pointer; }
+.manager .deleteButton:hover:not(:disabled) { background: #a4322410; }
+.deleteConfirmation { display: grid; gap: 10px; }
+.deleteConfirmation p { margin: 0; font-size: 14px; }

@@ -21,11 +21,12 @@ export default function PhotoManager() {
   const [dirty, setDirty] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const load = useCallback(async (signal?: AbortSignal) => {
     setError(''); setLoadingLibrary(true);
     try {
       const data = await api('/api/wedding/admin/photos', { signal });
-      if (!signal?.aborted) { setLibrary(data); setDirty(false); }
+      if (!signal?.aborted) { setLibrary(data); setDirty(false); setDeleteId(null); }
     } catch (error) {
       if (!signal?.aborted) setError((error as Error).message);
     } finally { if (!signal?.aborted) setLoadingLibrary(false); }
@@ -56,10 +57,12 @@ export default function PhotoManager() {
     catch (error) { setError((error as Error).message); } finally { setBusy(false); }
   }
   function edit(id: string, update: Partial<ManagedPhoto>) {
+    setDeleteId(null);
     setLibrary(current => current && ({ ...current, photos: current.photos.map(photo => photo.id === id ? { ...photo, ...update } : photo) })); setDirty(true); setMessage('');
   }
   function move(id: string, direction: number) {
     if (!library) return;
+    setDeleteId(null);
     const photos = [...library.photos]; const from = photos.findIndex(photo => photo.id === id);
     let to = from + direction; while (to >= 0 && to < photos.length && photos[to].collection !== collection) to += direction;
     if (to < 0 || to >= photos.length) return;
@@ -71,8 +74,22 @@ export default function PhotoManager() {
     try { const data = await api('/api/wedding/admin/photos', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(library) }); setLibrary(data); setDirty(false); setMessage('Saved. Your changes are now visible on the website.'); }
     catch (error) { setError((error as Error).message); } finally { setBusy(false); }
   }
+  async function deletePhoto(id: string) {
+    if (!library || busy || dirty || loadingLibrary) return;
+    setBusy(true); setError(''); setMessage('');
+    try {
+      const data = await api('/api/wedding/admin/photos', {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, revision: library.revision }),
+      });
+      setLibrary(data); setDeleteId(null);
+      setMessage('Photo deleted from the library and website.');
+    } catch (error) { setError((error as Error).message); }
+    finally { setBusy(false); }
+  }
   function sortByDate() {
     if (!library || busy || loadingLibrary) return;
+    setDeleteId(null);
     setLibrary({ ...library, photos: sortGalleryByDate(library.photos) });
     setDirty(true);
     setMessage('Sorted oldest to newest, with undated photos last. Click Save changes to keep this order.');
@@ -119,7 +136,14 @@ export default function PhotoManager() {
         </details>
       </div>
       <div className={styles.fields}><label>Caption<input value={photo.caption} maxLength={500} disabled={busy} onChange={event => edit(photo.id, { caption: event.target.value })}/></label><label>Description for accessibility<input value={photo.alt} maxLength={500} disabled={busy} onChange={event => edit(photo.id, { alt: event.target.value })}/></label><label>Photo date<input type="date" value={photo.photoDate || ''} disabled={busy} onChange={event => edit(photo.id, { photoDate: event.target.value || null })}/></label><label className={styles.checkbox}><input type="checkbox" checked={photo.included} disabled={busy} onChange={event => edit(photo.id, { included: event.target.checked })}/>Include on website</label></div>
-      <div className={styles.actions}><span>Position {index + 1}</span><button disabled={busy || index === 0} onClick={() => move(photo.id, -1)} aria-label={`Move photo ${index + 1} up`}>Move up</button><button disabled={busy || index === photos.length - 1} onClick={() => move(photo.id, 1)} aria-label={`Move photo ${index + 1} down`}>Move down</button><label>Replace photo<input type="file" accept={photoAccept} disabled={busy || dirty} onChange={event => { void upload(event.target.files, photo.id); event.target.value = ''; }}/></label></div>
+      <div className={styles.actions}><span>Position {index + 1}</span><button disabled={busy || index === 0} onClick={() => move(photo.id, -1)} aria-label={`Move photo ${index + 1} up`}>Move up</button><button disabled={busy || index === photos.length - 1} onClick={() => move(photo.id, 1)} aria-label={`Move photo ${index + 1} down`}>Move down</button><label>Replace photo<input type="file" accept={photoAccept} disabled={busy || dirty} onChange={event => { void upload(event.target.files, photo.id); event.target.value = ''; }}/></label>
+        {deleteId === photo.id ? <div className={styles.deleteConfirmation} role="group" aria-label={`Confirm deletion of photo ${index + 1}`}>
+          <p>Delete this photo from the library and website?</p>
+          <button type="button" className={styles.deleteButton} disabled={busy || dirty || loadingLibrary} onClick={() => void deletePhoto(photo.id)}>Confirm delete</button>
+          <button type="button" disabled={busy} onClick={() => setDeleteId(null)}>Cancel</button>
+        </div> : <button type="button" className={styles.deleteButton} disabled={busy || dirty || loadingLibrary} title={dirty ? 'Save your edits before deleting a photo.' : undefined} aria-label={`Delete photo ${index + 1}${photo.caption ? `: ${photo.caption}` : ''}`} onClick={() => setDeleteId(photo.id)}>Delete photo</button>}
+        {dirty && <small>Save your edits before deleting.</small>}
+      </div>
     </article>)}</div>}
   </div>;
 }
