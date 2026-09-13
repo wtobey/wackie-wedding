@@ -806,6 +806,10 @@
   line-height: 1.78;
 }
 .flightOrigin p { max-width: 39ch; }
+/* Let travel copy fill its existing page, column, or card container. */
+.site .transportationPage p,
+.site .guernevilleFavorites p,
+.site .tripExplore p { max-width: none; }
 .venueAddress > p { max-width: 44ch; }
 .faqContent .transportNotes > section > p {
   max-width: 46ch;
