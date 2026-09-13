@@ -4,7 +4,7 @@
   --header-travel: 46px;
   --header-height: calc(110px - 46px * var(--header-progress));
   --font-wedding: "postea-greek-vf", sans-serif;
-  --font-polaroid: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
+  --font-polaroid: "scribo-rough-regular", sans-serif;
   --paper: #faf7f2;
   --ink: color-mix(in srgb, var(--espresso) 80%, var(--paper));
   --muted: var(--ink);
@@ -19,6 +19,8 @@
   /* Reserved: Pantone Peach Bud 14-1324; digital hex not yet specified. */
   --peach-panel: #C9848A;
   --line: rgba(171, 72, 45, .22);
+  --card-border: var(--line);
+  --card-shadow: 0 5px 16px #68554314, 0 1px 3px #00000008;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -78,7 +80,7 @@
 .polaroid { background: var(--paper-texture), var(--paper); padding: 10px 10px 0; border-radius: 2px; box-shadow: 0 5px 14px #623d2514, 0 1px 3px #623d2512; }
 .photoFrame { position: relative; aspect-ratio: 1 / 1; background: color-mix(in srgb, #889063 15%, var(--paper)); overflow: hidden; }
 .photoFrame img { object-fit: cover; }
-.polaroid figcaption { font-family: var(--font-polaroid); font-weight: 400; padding: 14px 2px 19px; font-size: 14px; font-style: italic; text-align: center; }
+.polaroid figcaption { font-family: var(--font-polaroid); font-weight: 400; padding: 14px 2px 19px; font-size: 20px; font-style: normal; text-align: center; }
 .weekendSection { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 64px max(6%, calc((100vw - 1120px) / 2)); background: var(--paper-texture), var(--peach-panel); }
 .patternedWeekend { padding: 48px max(4%, calc((100vw - 1200px) / 2)); background: url('/wedding_v1-assets/wedding-meadow-pattern.png') center / 420px repeat, var(--soft-peach); background-blend-mode: multiply; }
 .weekendPaper { padding: 40px; background: var(--paper); }
@@ -141,7 +143,7 @@
 .stayGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 75px; align-items: center; padding: 12px 0 35px; }
 .stayGrid .polaroid { transform: rotate(-3deg); }
 .stayGrid .photoFrame { aspect-ratio: 1 / 1.05; }
-.stayGrid .polaroid figcaption { padding: 20px 0 24px; font-size: 18px; }
+.stayGrid .polaroid figcaption { padding: 20px 0 24px; font-size: 22px; }
 .photoCredit { display: block; text-align: center; font: 400 9px/1.5 var(--font-wedding); color: var(--muted); margin-top: 23px; }
 .stayCopy h2 { margin: 13px 0 22px; }
 .stayCopy > p, .stayCopy address { font-size: 15px; }
@@ -216,7 +218,7 @@
 .galleryPhoto:nth-child(3n+1) { transform: rotate(-2deg); }
 .galleryPhoto:nth-child(3n) { transform: rotate(2deg); }
 .galleryPhoto:hover { transform: rotate(0) translateY(-5px); }
-.galleryCaption { font-family: var(--font-polaroid); font-style: italic; font-weight: 400; display: block; padding: 17px 6px 21px; font-size: 14px; overflow-wrap: anywhere; }
+.galleryCaption { font-family: var(--font-polaroid); font-style: normal; font-weight: 400; display: block; padding: 17px 6px 21px; font-size: 20px; overflow-wrap: anywhere; }
 .galleryCaption small { display: block; color: var(--muted); margin-top: 6px; font: 400 10px/1.5 var(--font-wedding); }
 .photoFallback { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; font-size: 17px; color: var(--muted); }
 .photoFallback svg { width: 70px; }
@@ -259,7 +261,7 @@
   .nav > a { font-size: 11px; }
 }
 @media (max-width: 1000px) {
-  .polaroid figcaption { font-size: 12px; }
+  .polaroid figcaption { font-size: 18px; }
   .homePlanning { gap: 45px; }
   .events { gap: 22px; }
   .event h3 { font-size: 23px; }
@@ -313,7 +315,7 @@
   .flightSection { padding-top: 45px; }
   .nextPage { padding: 42px 0; }
   .galleryGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 15px; }
-  .galleryCaption { font-size: 12px; padding: 12px 2px 16px; }
+  .galleryCaption { font-size: 18px; padding: 12px 2px 16px; }
   .galleryStatus { padding: 45px 20px; }
   .lightbox { padding: 12px; }
   .lightboxBottom { gap: 10px; }
@@ -327,7 +329,7 @@
 @media (max-width: 380px) { .attractions { grid-template-columns: 1fr; } }
 
 /* Keep the established wedding hero composition. */
-.hero { --font-wedding: var(--font-main); font-family: var(--font-wedding); position: relative; max-width: 1380px; margin: auto; padding: 48px 6% 22px; text-align: center; overflow: visible; cursor: pointer; }
+.hero { --font-wedding: var(--font-main); font-family: var(--font-wedding); position: relative; width: 100%; max-width: none; margin: auto; padding: 48px 6% 22px; text-align: center; overflow: visible; cursor: pointer; }
 .heroTitle { position: relative; margin-top: 10px; }
 .heroTitle h1 > span:first-child { text-transform: uppercase; }
 .heroTitle h1 { color: var(--peach); font-size: clamp(46px, 9vw, 124px); line-height: 1.05; letter-spacing: -.055em; font-weight: 400; }
@@ -375,7 +377,7 @@
 .droppedPhoto[data-ready="false"] { visibility: hidden; animation: none; }
 .droppedPhoto > div { aspect-ratio: 1; position: relative; background: color-mix(in srgb, #889063 15%, var(--paper)); overflow: hidden; }
 .droppedPhoto img { object-fit: cover; }
-.droppedPhoto figcaption { height: 36px; padding-top: 10px; text-align: center; color: var(--muted); font: italic 11px/1.3 var(--font-polaroid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.droppedPhoto figcaption { height: 36px; padding-top: 10px; text-align: center; color: var(--muted); font: normal 400 14px/1.3 var(--font-polaroid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dropPhotoHint { position: relative; z-index: 3; display: block; margin: 16px auto 0; padding: 8px; border: 0; background: transparent; color: var(--muted); font-size: 13px; }
 @media (max-width: 760px) {
   .hero { cursor: auto; }
@@ -572,10 +574,10 @@
 .airportSummary {
   align-self: start;
   padding: clamp(24px, 3vw, 40px);
-  background: linear-gradient(145deg, #fffffe, #fffcf8);
-  border: 1px solid var(--line);
+  background: var(--paper);
+  border: 1px solid var(--card-border);
   border-radius: 2px;
-  box-shadow: 0 5px 16px #68554314, 0 1px 3px #00000008;
+  box-shadow: var(--card-shadow);
 }
 .airportSummary .airportCode { font-size: clamp(64px, 9vw, 110px); margin: 8px 0 24px; }
 .airportSummary > p:not(.eyebrow) { max-width: 430px; }
@@ -619,9 +621,10 @@
     justify-self: center;
     margin-top: 28px;
     padding: 28px;
-    background: linear-gradient(145deg, #fffffe, #fffcf8);
+    background: var(--paper);
+    border: 1px solid var(--card-border);
     border-radius: 2px;
-    box-shadow: 0 5px 16px #68554320, 0 1px 3px #0000000a;
+    box-shadow: var(--card-shadow);
   }
   .site.site .accommodationsPanel .stayGrid .stayCopy h2 { font-size: 36px; margin-bottom: 20px; }
   .site.site .accommodationsPanel .stayCopy p { font-size: 15px; line-height: 1.65; }
@@ -698,7 +701,7 @@
   flex: 0 1 440px;
   margin: 0;
 }
-.venuePhotoLoading { aspect-ratio: 4 / 5; background: #fffaf2; border: 12px solid #fffaf2; box-shadow: 0 5px 16px #68554320; transform: rotate(-3deg); }
+.venuePhotoLoading { aspect-ratio: 4 / 5; background: var(--paper); border: 12px solid var(--paper); box-shadow: 0 5px 16px #68554320; transform: rotate(-3deg); }
 .note { padding: 28px 0 0; background: transparent; border: 0; border-top: 1px solid var(--line); }
 .patternNote::after { display: none; }
 .patternedWeekend { background: transparent; border: 0; padding: 64px 6%; }
@@ -726,10 +729,10 @@
 }
 .itineraryPage .event {
   background: var(--paper);
-  border: 0;
+  border: 1px solid var(--card-border);
   border-radius: 2px;
   padding: 28px;
-  box-shadow: 0 2px 10px rgba(98, 61, 37, .08);
+  box-shadow: var(--card-shadow);
 }
 .itineraryPage .venueAddress { margin-top: 0; border-top: 1px solid var(--line); }
 .itineraryPage .venueAddress h2 { color: #8A8635 !important; }

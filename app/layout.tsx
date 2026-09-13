@@ -46,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={fraunces.variable}>
       <body>
-        <link rel="stylesheet" href="https://use.typekit.net/fhe5uug.css?v=postea" precedence="wedding-fonts" />
+        <link rel="stylesheet" href="https://use.typekit.net/fhe5uug.css?v=postea-scribo-rough" precedence="wedding-fonts" />
         {children}
       </body>
     </html>

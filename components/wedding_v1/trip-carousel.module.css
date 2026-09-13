@@ -1,11 +1,14 @@
 .carousel { padding-bottom: 48px; }
 .rail { position: relative; display: flex; gap: 36px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 20px max(24px, calc((100% - 480px) / 2)) 32px; overscroll-behavior-x: contain; }
 .rail::-webkit-scrollbar { display: none; }
-.card { position: relative; flex: 0 0 min(480px, calc(100vw - 64px)); scroll-snap-align: center; padding: calc(clamp(20px, 3vw, 32px) + 13px); background: var(--paper); border: 1px solid var(--gold); box-shadow: 0 4px 8px #623d2510; display: flex; flex-direction: column; }
+.card { position: relative; flex: 0 0 min(480px, calc(100vw - 64px)); scroll-snap-align: center; padding: calc(clamp(20px, 3vw, 32px) + 13px); background: var(--paper); border: 1px solid var(--card-border); box-shadow: var(--card-shadow); display: flex; flex-direction: column; }
 .card .theme { color: #889063; font-size: 13px; margin-bottom: 24px; }
-.card h2 { font-size: clamp(32px, 4vw, 44px); margin: 0 0 24px; }
-.carousel .rail .card h2 { color: var(--olive) !important; }
-.card > p { line-height: 1.75; }
+.card :is(h2, h3) { font-size: clamp(32px, 4vw, 44px); margin: 0 0 24px; }
+.carousel .rail .card :is(h2, h3) { color: var(--olive) !important; }
+.card > p, .copy p { line-height: 1.75; }
+.copy a { text-decoration: underline; text-underline-offset: 3px; }
+.copy ul { margin: 20px 0 0; padding-left: 1.2em; list-style: disc; line-height: 1.75; }
+.copy li + li { margin-top: 10px; }
 .controls { width: min(480px, calc(100% - 48px)); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .controls p { text-align: center; font-size: 14px; }
 .controls button { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--orange); cursor: pointer; flex-shrink: 0; }
@@ -13,3 +16,21 @@
 .controls button:focus-visible { outline: 2px solid var(--orange); outline-offset: 4px; }
 
 .controls button svg { display: block; margin: auto; }
+
+.activities {
+  --activity-width: min(480px, calc(100vw - 64px));
+  --activity-gutter: max(clamp(24px, 5vw, 64px), calc((100% - 1180px) / 2 + clamp(24px, 5vw, 64px)));
+  padding-bottom: 0;
+}
+.activities .rail {
+  align-items: stretch;
+  gap: 36px;
+  padding-left: var(--activity-gutter);
+  padding-right: max(var(--activity-gutter), calc(100% - var(--activity-width) - var(--activity-gutter)));
+  scroll-padding-left: var(--activity-gutter);
+}
+.activities .card {
+  flex-basis: var(--activity-width);
+  scroll-snap-align: start;
+}
+.activities .card h3 { font-size: clamp(28px, 3vw, 36px); line-height: 1.2; margin-bottom: 20px; }

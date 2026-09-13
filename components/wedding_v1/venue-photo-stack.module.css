@@ -1,36 +1,60 @@
 .album { min-width: 0; }
-.stack { position: relative; isolation: isolate; display: grid; width: 100%; padding: 28px 22px 34px; border: 0; background: transparent; color: var(--ink); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.card { grid-area: 1 / 1; min-width: 0; display: block; padding: 10px 10px 0; border-radius: 2px; background: linear-gradient(145deg, #fffffe, #fffcf8); box-shadow: 0 5px 16px #68554320, 0 1px 3px #0000000a; transform-origin: 50% 75%; will-change: transform, opacity; z-index: 0; transform: translate(-7px, 10px) rotate(-6deg); }
-.card[data-depth="0"] { z-index: 3; transform: rotate(-3deg); }
-.card[data-depth="1"] { z-index: 2; transform: translate(9px, 6px) rotate(3deg); }
-.card[data-depth="2"] { z-index: 1; transform: translate(-7px, 10px) rotate(-6deg); }
-.stack[data-flipping="true"] .card { animation-duration: 380ms; animation-timing-function: ease-in-out; animation-fill-mode: both; }
-.stack[data-flipping="true"] .card[data-depth="0"] { animation-name: fadeCard; }
-.stack[data-flipping="true"] .card[data-depth="1"] { animation-name: revealCard; }
-.stack[data-flipping="true"] .card[data-depth="2"] { animation-name: settleMiddle; }
+.stack { position: relative; transform-style: preserve-3d; display: grid; width: 100%; padding: 28px 22px 34px; border: 0; background: transparent; color: var(--ink); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.card { grid-area: 1 / 1; min-width: 0; display: block; padding: 10px 10px 0; border-radius: 2px; background: var(--paper); box-shadow: 0 5px 16px #68554320, 0 1px 3px #0000000a; transform-origin: bottom right; transform: translate3d(-7px, 10px, -9px) rotate(-6deg); }
+.card[data-depth="0"] { transform: translateZ(0) rotate(-3deg); }
+.card[data-depth="1"] { transform: translate3d(9px, 6px, -3px) rotate(3deg); }
+.card[data-depth="2"] { transform: translate3d(-7px, 10px, -6px) rotate(-6deg); }
+.stack[data-flipping="true"] { z-index: 4; }
+.stack[data-flipping="true"] .card { animation-duration: 750ms; animation-timing-function: linear; animation-fill-mode: both; }
+.stack[data-flipping="true"] .card[data-depth="0"] { animation-name: tuckBehind; }
+.stack[data-flipping="true"] .card[data-depth="1"] { animation-name: advanceCard; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+.stack[data-flipping="true"] .card[data-depth="2"] { animation-name: settleMiddle; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
 .frame { position: relative; display: block; aspect-ratio: 1 / 1.05; overflow: hidden; background: #f3eadb; }
 .frame img { object-fit: cover; }
-.caption { display: block; min-height: 66px; padding: 20px 4px 24px; font: italic 17px/1.25 var(--font-polaroid); text-align: center; letter-spacing: .01em; }
+.caption { display: block; min-height: 66px; padding: 20px 4px 24px; font: normal 400 22px/1.25 var(--font-polaroid); text-align: center; letter-spacing: .01em; }
 .hint { text-align: center; font-size: 12px; color: var(--muted); }
 @media (min-width: 761px) {
   .album p.hint { color: var(--paper); }
 }
 .fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--orange); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-@keyframes fadeCard {
-  from { transform: rotate(-3deg); opacity: 1; z-index: 4; }
-  to { transform: rotate(-3deg); opacity: 0; z-index: 4; }
+/* Sample one continuous arc with a smooth start and finish. Linear interpolation
+   between samples avoids restarting an easing curve at each stage.
+   u = smootherstep(t), arc = sin(PI * u); depth follows sin(2 * PI * u).
+   Cards share a 3D context so the tuck needs neither a layer swap nor a fade. */
+@keyframes tuckBehind {
+  0% { transform: translate3d(calc(0.000% - 0.000px), 0.000px, 0.000px) rotate(-3.000deg) rotateY(-0.000deg); }
+  5% { transform: translate3d(calc(0.018% - 0.008px), -0.018px, 0.644px) rotate(-2.949deg) rotateY(-0.044deg); }
+  10% { transform: translate3d(calc(0.134% - 0.060px), -0.130px, 4.761px) rotate(-2.622deg) rotateY(-0.323deg); }
+  15% { transform: translate3d(calc(0.418% - 0.186px), -0.402px, 14.739px) rotate(-1.827deg) rotateY(-1.002deg); }
+  20% { transform: translate3d(calc(0.905% - 0.405px), -0.868px, 31.514px) rotate(-0.459deg) rotateY(-2.172deg); }
+  25% { transform: translate3d(calc(1.598% - 0.725px), -1.521px, 53.564px) rotate(1.482deg) rotateY(-3.834deg); }
+  30% { transform: translate3d(calc(2.451% - 1.142px), -2.291px, 75.441px) rotate(3.864deg) rotateY(-5.883deg); }
+  35% { transform: translate3d(calc(3.367% - 1.646px), -3.036px, 87.493px) rotate(6.396deg) rotateY(-8.081deg); }
+  40% { transform: translate3d(calc(4.200% - 2.222px), -3.546px, 79.183px) rotate(8.648deg) rotateY(-10.080deg); }
+  45% { transform: translate3d(calc(4.788% - 2.848px), -3.591px, 46.046px) rotate(10.142deg) rotateY(-11.490deg); }
+  50% { transform: translate3d(calc(5.000% - 3.500px), -3.000px, -4.500px) rotate(10.500deg) rotateY(-12.000deg); }
+  55% { transform: translate3d(calc(4.788% - 4.152px), -1.729px, -55.046px) rotate(9.583deg) rotateY(-11.490deg); }
+  60% { transform: translate3d(calc(4.200% - 4.778px), 0.106px, -88.183px) rotate(7.552deg) rotateY(-10.080deg); }
+  65% { transform: translate3d(calc(3.367% - 5.354px), 2.261px, -96.493px) rotate(4.807deg) rotateY(-8.081deg); }
+  70% { transform: translate3d(calc(2.451% - 5.858px), 4.448px, -84.441px) rotate(1.842deg) rotateY(-5.883deg); }
+  75% { transform: translate3d(calc(1.598% - 6.275px), 6.409px, -62.564px) rotate(-0.897deg) rotateY(-3.834deg); }
+  80% { transform: translate3d(calc(0.905% - 6.595px), 7.973px, -40.514px) rotate(-3.112deg) rotateY(-2.172deg); }
+  85% { transform: translate3d(calc(0.418% - 6.814px), 9.066px, -23.739px) rotate(-4.668deg) rotateY(-1.002deg); }
+  90% { transform: translate3d(calc(0.134% - 6.940px), 9.699px, -13.761px) rotate(-5.571deg) rotateY(-0.323deg); }
+  95% { transform: translate3d(calc(0.018% - 6.992px), 9.959px, -9.644px) rotate(-5.942deg) rotateY(-0.044deg); }
+  100% { transform: translate3d(calc(0.000% - 7.000px), 10.000px, -9.000px) rotate(-6.000deg) rotateY(-0.000deg); }
 }
-@keyframes revealCard {
-  from { transform: rotate(-3deg); opacity: 0; z-index: 3; }
-  to { transform: rotate(-3deg); opacity: 1; z-index: 3; }
+@keyframes advanceCard {
+  from { transform: translate3d(9px, 6px, -3px) rotate(3deg); }
+  to { transform: translate3d(0, 0, 0) rotate(-3deg); }
 }
 @keyframes settleMiddle {
-  0% { transform: translate(-7px, 10px) rotate(-6deg); z-index: 2; }
-  100% { transform: translate(9px, 6px) rotate(3deg); z-index: 2; }
+  from { transform: translate3d(-7px, 10px, -6px) rotate(-6deg); }
+  to { transform: translate3d(9px, 6px, -3px) rotate(3deg); }
 }
 @media (max-width: 760px) {
   .frame { aspect-ratio: 1.15; }
-  .caption { font-size: 14px; min-height: 60px; padding: 18px 4px 20px; }
+  .caption { font-size: 20px; min-height: 60px; padding: 18px 4px 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .stack[data-flipping="true"] .card { animation: none; } }

@@ -30,6 +30,12 @@ export default function VenuePhotoStack({ photos }: { photos: VenuePhoto[] }) {
     motion.addEventListener("change", handleChange);
     return () => motion.removeEventListener("change", handleChange);
   }, [finishFlip]);
+  useEffect(() => {
+    if (!flipping) return;
+    // Recover if the browser interrupts the CSS animation before animationend.
+    const timer = setTimeout(finishFlip, 1050);
+    return () => clearTimeout(timer);
+  }, [flipping, finishFlip]);
 
   function flip() {
     if (busy.current || photos.length < 2 || !ready[photos[(current + 1) % photos.length].src]) return;
