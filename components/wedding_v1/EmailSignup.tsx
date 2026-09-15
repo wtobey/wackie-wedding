@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { trackWeddingEvent } from '@/lib/analytics/client';
 import styles from './email-signup.module.css';
 
 export const EMAIL_SUBSCRIBED_KEY = 'wackie-wedding-email-subscribed';
@@ -38,6 +39,7 @@ export default function EmailSignup({ source, onContinue }: Props) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Couldn’t save your email. Please try again.');
+      trackWeddingEvent('email_subscribed');
       try {
         localStorage.setItem(EMAIL_SUBSCRIBED_KEY, 'true');
       } catch { /* The server still recorded the signup. */ }

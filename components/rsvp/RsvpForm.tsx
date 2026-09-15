@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { LookupResult, Party, RsvpMode } from '@/lib/rsvp/types';
 import { request } from '@/lib/rsvp/client';
 import { declineChoices } from '@/lib/rsvp/decline';
+import { trackWeddingEvent } from '@/lib/analytics/client';
 import styles from './rsvp.module.css';
 function guestName(guest: Party['guests'][number]) {
   return guest.firstName
@@ -98,6 +99,7 @@ export default function RsvpForm() {
       });
       setParty(result.party);
       setSaved(true);
+      trackWeddingEvent('rsvp_declined');
       pending.current = null;
     } catch (e) {
       setError((e as Error).message);

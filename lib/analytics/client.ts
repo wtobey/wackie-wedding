@@ -4,7 +4,8 @@ import type { PostHog } from 'posthog-js';
 import { analyticsAllowed, analyticsPath, cleanAnalyticsUrl } from './routes';
 
 type WeddingEvent = 'guest_access_granted' | 'rsvp_opened' | 'registry_clicked' |
-  'directions_clicked' | 'photo_opened' | 'gallery_view_changed';
+  'directions_clicked' | 'photo_opened' | 'gallery_view_changed' |
+  'email_subscribed' | 'rsvp_declined';
 let client: Promise<PostHog | null> | undefined;
 let currentScreen: string | null = null;
 
@@ -19,7 +20,9 @@ function getClient() {
   if (!enabled()) return Promise.resolve(null);
   client ??= import('posthog-js').then(({ default: posthog }) => {
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN!, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://t.wackie.wedding',
+      ui_host: process.env.NEXT_PUBLIC_POSTHOG_UI_HOST || 'https://us.posthog.com',
+      defaults: '2026-05-30',
       capture_pageview: false,
       capture_pageleave: false,
       autocapture: false,

@@ -7,10 +7,11 @@ Set these Vercel **Production** environment variables, then rebuild/deploy:
 
 ```dotenv
 NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=phc_your_public_project_token
-NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+NEXT_PUBLIC_POSTHOG_HOST=https://t.wackie.wedding
+NEXT_PUBLIC_POSTHOG_UI_HOST=https://us.posthog.com
 ```
 
-For an EU project, use `https://eu.i.posthog.com`. Copy the public project token
+`NEXT_PUBLIC_POSTHOG_HOST` is the managed reverse-proxy domain. Copy the public project token
 from PostHog Project settings, not a personal API key. These values are intended
 to appear in the browser bundle. Without the token, analytics stays disabled.
 
@@ -28,6 +29,8 @@ are excluded. No subscription upgrade is required by this integration.
 - `directions_clicked`: opens Dawn Ranch directions.
 - `photo_opened`: opens the full photo viewer; `view` is grid or timeline.
 - `gallery_view_changed`: switches views; `view` is the destination view.
+- `email_subscribed`: a guest successfully submits an email address (the address is never sent).
+- `rsvp_declined`: a guest successfully submits the early decline form (names and party data are never sent).
 
 In PostHog, Web Analytics shows visitors, page views, referrers and devices.
 Use Product Analytics trends for the custom events. Visitor counts are anonymous
