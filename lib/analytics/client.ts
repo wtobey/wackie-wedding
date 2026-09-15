@@ -26,7 +26,17 @@ function getClient() {
       capture_pageview: false,
       capture_pageleave: false,
       autocapture: false,
-      disable_session_recording: true,
+      capture_exceptions: {
+        capture_unhandled_errors: true,
+        capture_unhandled_rejections: true,
+        capture_console_errors: false,
+      },
+      disable_session_recording: false,
+      session_recording: {
+        maskAllInputs: true,
+        blockClass: 'ph-no-capture',
+        ignoreClass: 'ph-ignore-input',
+      },
       disable_surveys: true,
       advanced_disable_feature_flags: true,
       capture_performance: false,

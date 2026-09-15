@@ -219,7 +219,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       <Link href="/" className={styles.gateBrand}>Will + Jackie</Link>
       <div ref={passwordMoverRef} className={styles.gateWelcome}>
       <div ref={passwordRotorRef} className={styles.passwordRotor}>
-      <div ref={passwordCardRef} className={styles.gateCard}>
+      <div ref={passwordCardRef} className={`${styles.gateCard} ph-no-capture`}>
         {signupStep ? <>
           <h1 ref={signupHeading} tabIndex={-1}>One item of business…</h1>
           <p className={styles.gateIntro}>If you&apos;d like to stay tuned for our hotel booking links, leave your email here.</p>

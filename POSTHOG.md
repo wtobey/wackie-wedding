@@ -35,13 +35,18 @@ are excluded. No subscription upgrade is required by this integration.
 In PostHog, Web Analytics shows visitors, page views, referrers and devices.
 Use Product Analytics trends for the custom events. Visitor counts are anonymous
 browser estimates, not identified guests. Local storage maintains the anonymous
-ID. No identify calls, session replay, autocapture, surveys, feature flags or
-performance collection are enabled. URL query strings and fragments are removed.
-Captions, photo URLs, passwords, and form values are not included in custom events.
+ID. Session replay and unhandled client errors are enabled only on production
+guest pages. Inputs are masked, the password card and entire RSVP form are
+blocked from replay, and console errors are not captured. No identify calls,
+autocapture, surveys, feature flags or performance collection are enabled. URL
+query strings and fragments are removed. Captions, photo URLs, passwords, and
+form values are not included in custom events.
 
 ## Verification
 
 Run `npx tsx --test lib/analytics/routes.test.ts` and `npm run build`.
 After configuring and deploying, open a public page on the production domain,
 enter the guest password, and switch gallery views. Check PostHog Activity for
-the page and custom events. Verify admin navigation produces no events.
+the page, custom events, session replay and an intentional test exception.
+Verify the password card and RSVP form are masked or blocked, and admin
+navigation produces no analytics.
