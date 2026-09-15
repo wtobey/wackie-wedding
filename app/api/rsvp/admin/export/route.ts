@@ -9,6 +9,26 @@ export async function GET(request: Request) {
     await requireAdmin();
     const format = new URL(request.url).searchParams.get('format');
     const snapshotId = new URL(request.url).searchParams.get('snapshot');
+    if (format === 'subscribers') {
+      const rows = await withRsvpDatabase((db) =>
+        db`SELECT email, source, subscribed_at FROM wedding_rsvp.email_subscribers ORDER BY subscribed_at, email`,
+      );
+      const content = encodeCsv([
+        ['email', 'source', 'subscribed_at'],
+        ...rows.map((row) => [
+          String(row.email),
+          String(row.source),
+          new Date(row.subscribed_at).toISOString(),
+        ]),
+      ]);
+      return new Response(content, {
+        headers: {
+          'Content-Type': 'text/csv',
+          'Cache-Control': 'no-store',
+          'Content-Disposition': `attachment; filename="wedding-email-subscribers-${new Date().toISOString().slice(0, 10)}.csv"`,
+        },
+      });
+    }
     const snapshot = await withRsvpDatabase((db) =>
       db.begin('isolation level repeatable read read only', async (tx) =>
         snapshotId

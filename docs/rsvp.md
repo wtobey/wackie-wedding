@@ -103,3 +103,13 @@ docker run --name wackie-rsvp-dev -e POSTGRES_DB=wedding_rsvp_dev \
 Set the ignored `.env.local` `RSVP_DATABASE_URL` to that database, run `npm run rsvp:migrate`, then `npm run rsvp:seed-local`. Fixtures refuse nonlocal or non-dev database names. Try **Kelly Bond** (plus-one) and **John Smith** (two matching parties). The fixture script enables early declines in this local database only.
 
 Run `npm run test:rsvp` for validation tests; set `RSVP_TEST_DATABASE_URL` to local PostgreSQL to include database integration tests. Integration tests create and remove their own uniquely named database. They cover rollback, concurrent saves, idempotent retries, import preservation, event/party validation, plus-one identity, early declines and database-level deletion/audit protections.
+
+## Hotel booking email subscribers
+
+`003_email_subscribers.sql` adds the private `wedding_rsvp.email_subscribers` table using the same versioned migration runner. Apply it before releasing the signup UI. Normal builds do not migrate the database. Use `npm run rsvp:migrate` locally (verified full backup first), and the existing schema-only deployment job (`RSVP_DEPLOY_JOB=migrate`) for production.
+
+Guests can opt in after entering the website password, or in the accommodations booking note. Skipping never creates a subscriber. Email addresses are trimmed and lowercased; a unique constraint makes retries and duplicate submissions from either form safe. The original signup source, timestamp, ID, and consent version are preserved. The API validates bounded same-origin JSON and shares database-backed rate limiting with a separate signup counter. It never returns the subscriber list or whether an email was already registered, and does not send addresses to analytics.
+
+There is no email delivery integration yet: this collects an opt-in list for hotel booking updates. To view/export it, use the Supabase table editor for `wedding_rsvp.email_subscribers` or a trusted server database connection. Public browser database clients cannot read the table. Guest-list imports and their rollbacks do not touch subscribers. Full database backups and the production deployment job's schema snapshots include this table; RSVP-only import snapshots do not.
+
+The RSVP admin page also provides **Download email subscribers CSV**. It uses the existing admin session, returns email, signup source and signup time, and never exposes the list to public requests.

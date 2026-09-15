@@ -22,6 +22,7 @@ test(
       assert.deepEqual(await applyMigrations(db), [
         "001_initial.sql",
         "002_import_snapshots.sql",
+        "003_email_subscribers.sql",
       ]);
       assert.deepEqual(await applyMigrations(db), []);
       assert.deepEqual(

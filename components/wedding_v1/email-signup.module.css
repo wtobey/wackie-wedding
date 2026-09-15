@@ -1,0 +1,17 @@
+.signup { margin: 24px 0 8px; text-align: left; }
+.signup form { display: grid; gap: 12px; }
+.signup label { font-size: 14px; }
+.signup input { box-sizing: border-box; width: 100%; min-width: 0; border: 1px solid var(--orange); padding: 14px; background: color-mix(in srgb, var(--peach) 30%, var(--paper)); color: var(--ink); font: inherit; font-size: 16px; border-radius: 0; }
+.signup input:focus-visible, .signup button:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+.signup .note { font-size: 12px; line-height: 1.5; margin: 0; }
+.signup .error { color: var(--orange); margin: 0; font-size: 14px; }
+.successField { box-sizing: border-box; display: flex; width: 100%; min-height: 52px; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; border: 1px solid var(--orange); background: var(--orange); color: var(--paper); font-size: 16px; line-height: 1.5; }
+.successField > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.successMark { flex: 0 0 auto; font-size: 19px; line-height: 1; }
+.submit { width: 100%; padding: 14px 20px; min-height: 48px; border: 1px solid var(--orange); color: var(--paper); background: var(--orange); cursor: pointer; font: inherit; font-size: 16px; }
+.submit:hover { background: var(--espresso); }
+.submit:disabled { opacity: .65; cursor: wait; }
+.passwordSignup input { border-color: var(--line); background: transparent; padding: 16px 14px; }
+.passwordSignup .submit { min-height: 52px; border-radius: 0; background: var(--orange); border-color: var(--orange); color: var(--paper); }
+.passwordSignup .submit:hover { background: var(--espresso); }
+.skip { display: block; margin: 18px auto 0; padding: 8px; border: 0; background: transparent; color: var(--ink); text-decoration: underline; text-underline-offset: 4px; font: inherit; font-size: 14px; cursor: pointer; }

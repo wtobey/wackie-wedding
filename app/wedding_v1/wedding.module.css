@@ -48,6 +48,7 @@
 .addressLink { display: inline-block; color: var(--orange); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
 .addressLink:hover { text-decoration-color: currentColor; }
 .stayCopy .addressLink { display: inline-flex; align-items: center; gap: 12px; }
+.stayCopy .addressLink span { white-space: nowrap; }
 .directionsIcon { width: 20px; height: 24px; flex-shrink: 0; }
 .site section[id] { scroll-margin-top: 32px; }
 .eyebrow { font-size: 13px; line-height: 1.6; font-weight: 400; color: var(--muted); }
@@ -617,7 +618,8 @@
   .accommodationsPanel .stayCopy {
     width: calc(100% - 44px);
     max-width: 440px;
-    aspect-ratio: 440 / 517;
+    /* Let the booking signup remain inside the card as its content grows. */
+    aspect-ratio: auto;
     justify-self: center;
     margin-top: 28px;
     padding: 28px;
@@ -630,10 +632,11 @@
   .site.site .accommodationsPanel .stayCopy p { font-size: 15px; line-height: 1.65; }
   .site.site .accommodationsPanel .stayCopy address { font-size: 14px; }
   .accommodationsPanel .photoBackdrop {
-    position: sticky;
-    top: calc(var(--header-expanded-height) - var(--header-travel) + 16px);
+    position: static;
+    top: auto;
+    transform: none;
     height: auto;
-    align-self: start;
+    align-self: center;
     display: flex;
     align-items: center;
     padding: 0;
@@ -872,7 +875,7 @@
     text-transform: none;
   }
   .accommodationsPanel .stayGrid { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .accommodationsPanel .stayGrid > .photoBackdrop:first-child { position: static; padding: 28px 24px; background: linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top left / 560px 700px repeat; }
+  .accommodationsPanel .stayGrid > .photoBackdrop:first-child { position: static; transform: none; padding: 28px 24px; background: linear-gradient(rgb(250 247 242 / 48%), rgb(250 247 242 / 48%)), #e4d9c2 url('/wedding_v1-assets/striped-linen.jpeg') top left / 560px 700px repeat; }
   .accommodationsPanel .photoBackdrop > div { position: static; width: min(100%, 360px); }
   .accommodationsPanel .stayCopy {
     width: 100%;
@@ -917,7 +920,7 @@
 .siteUnlocking > .headerSpace,
 .siteUnlocking > footer,
 .siteUnlocking .hero > :not([data-home-invitation]) { opacity: 0; pointer-events: none; }
-.gate .gateCard { width: min(100%, 540px); padding: clamp(32px, 6vw, 60px); background: var(--paper-texture), var(--paper); border: 1px solid var(--line); border-radius: 0; box-shadow: 0 12px 35px #5429160a; animation: none; outline: 1px solid var(--line); outline-offset: -9px; }
+.gate .gateCard { box-sizing: border-box; width: min(100%, 540px); padding: clamp(32px, 6vw, 60px); background: var(--paper-texture), var(--paper); border: 1px solid var(--line); border-radius: 0; box-shadow: 0 12px 35px #5429160a; animation: none; outline: 1px solid var(--line); outline-offset: -9px; }
 .site.site .gateCard h1 { font-size: clamp(26px, 4vw, 34px); line-height: 1.15; letter-spacing: -.025em; color: var(--orange); }
 .site .gateCard .gateIntro { font-size: 15px; line-height: 1.65; margin-top: 18px; }
 .gate .passwordForm { max-width: none; margin: 32px auto 24px; }

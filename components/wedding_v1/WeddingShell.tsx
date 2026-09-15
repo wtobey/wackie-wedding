@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import WeddingAnalytics from "./WeddingAnalytics";
+import EmailSignup, { EMAIL_SUBSCRIBED_KEY } from "./EmailSignup";
 import { trackWeddingEvent } from "@/lib/analytics/client";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -62,6 +63,9 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [signingIn, setSigningIn] = useState(false);
+  const [signupStep, setSignupStep] = useState(false);
+  const signupHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { if (signupStep) signupHeading.current?.focus(); }, [signupStep]);
   const [unlocking, setUnlocking] = useState(false);
   const unlocked = useSyncExternalStore(subscribe, readAccess, () => false);
   const siteRef = useRef<HTMLDivElement>(null);
@@ -191,6 +195,16 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
     }
     trackWeddingEvent("guest_access_granted");
     setError("");
+    try {
+      if (localStorage.getItem(EMAIL_SUBSCRIBED_KEY) === 'true') {
+        continueToSite();
+        return;
+      }
+    } catch { /* Keep the optional signup available when storage is disabled. */ }
+    setSignupStep(true);
+  }
+
+  function continueToSite() {
     if (window.location.search) window.history.replaceState(null, "", window.location.pathname);
     if (pathname === "/") {
       passwordCardBounds.current = passwordCardRef.current?.getBoundingClientRect() ?? null;
@@ -206,6 +220,11 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
       <div ref={passwordMoverRef} className={styles.gateWelcome}>
       <div ref={passwordRotorRef} className={styles.passwordRotor}>
       <div ref={passwordCardRef} className={styles.gateCard}>
+        {signupStep ? <>
+          <h1 ref={signupHeading} tabIndex={-1}>One item of business…</h1>
+          <p className={styles.gateIntro}>If you&apos;d like to stay tuned for our hotel booking links, leave your email here.</p>
+          <EmailSignup source="password" onContinue={continueToSite}/>
+        </> : <>
         <h1>We can&apos;t wait to<br /><span style={{ whiteSpace: "nowrap" }}>see you in Sonoma!</span></h1>
         <p className={styles.gateIntro}>Please enter our wedding website password.</p>
         <form onSubmit={enter} className={styles.passwordForm}>
@@ -217,6 +236,7 @@ export default function WeddingShell({ children }: { children: ReactNode }) {
           <button className={styles.button} type="submit" disabled={signingIn}>Submit</button>
         </form>
         <p className={styles.smallNote}>Need the password? Try checking your save the date and reach out to Will or Jackie if you can&apos;t find it.</p>
+        </>}
       </div>
       {unlocking && <div className={`${styles.passwordBack} ${invitationStyles.invitationSurface}`} aria-hidden="true">
         <Image className={`${invitationStyles.artwork} ${styles.passwordBackArtwork}`} src="/wedding_v1-assets/wedding-save-the-date-ffa93f-e5680a.svg" alt="" width={800} height={800} unoptimized preload />

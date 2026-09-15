@@ -425,6 +425,9 @@ export default function RsvpAdmin() {
               <a href="/api/rsvp/admin/export?format=csv">
                 Export guest list CSV
               </a>
+              <a href="/api/rsvp/admin/export?format=subscribers">
+                Download email subscribers CSV
+              </a>
               <a href="/api/rsvp/admin/export">Download full RSVP snapshot</a>
               <button
                 className={styles.secondary}
