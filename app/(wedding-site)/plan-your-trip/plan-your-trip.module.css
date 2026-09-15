@@ -1,3 +1,4 @@
+.pageStart { scroll-margin-top: var(--header-expanded-height); }
 .pageHeader { border-bottom: 1px solid var(--line); margin-bottom: 40px; }
 .favoritesIntro { margin-bottom: 16px; }
 

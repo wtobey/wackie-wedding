@@ -23,7 +23,7 @@ const favorites: TripCard[] = [
     ),
   },
   {
-    name: "Sonoma Wineries",
+    name: "Visit Sonoma Wineries",
     copy: (
       <>
         <p>
@@ -49,22 +49,34 @@ const favorites: TripCard[] = [
     ),
   },
   {
-    name: "Soak up the sun",
+    name: "Float Around",
     copy: (
       <>
         <p>
-          At the hotel, you can lounge poolside under the redwoods and order
-          drinks and bites from The Boathouse, you can take a kayak or inner
-          tubes out on the river to float, or you can head out further for a
-          wine tasting or hike in the surrounding hills. We&apos;ll also have
-          some fun Saturday morning activities planned so we can start the big
-          day off right with our favorite people!
+          The Russian River is a highlight of Sonoma. On sunny days hundreds
+          of so called &quot;river rats&quot; head up to Sonoma to float lazily
+          down the river with their buoyant coolers, trying and failing to
+          avoid a sunburn. Dawn Ranch has a Russian River access point with
+          plenty of intertubes, kayaks and paddle boards. Please come floating
+          with us!
         </p>
       </>
     ),
   },
   {
-    name: "The Town",
+    name: "Enjoy Dawn Ranch",
+    copy: (
+      <p>
+        Dawn Ranch is a beautiful place to spend a weekend. Lounge at the pool,
+        eat and drink in the poolside bar and barbecue, and watch the stars with
+        smores around fire pits late at night. We&apos;re planning to organize
+        games on the main lawn and some group activities for the weekend so stay
+        tuned!
+      </p>
+    ),
+  },
+  {
+    name: "Visit the Town",
     copy: (
       <>
         <p>
@@ -85,7 +97,7 @@ const favorites: TripCard[] = [
 export default function PlanYourTrip() {
   return (
     <>
-      <div className={styles.pageWrap}>
+      <div className={`${styles.pageWrap} ${tripStyles.pageStart}`}>
         <div className={`${styles.pageIntro} ${tripStyles.pageHeader}`}>
           <h1>Plan your trip</h1>
         </div>

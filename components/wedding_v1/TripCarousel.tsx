@@ -64,9 +64,7 @@ export default function TripCarousel({
     const card = container?.children[index] as HTMLElement | undefined;
     if (!container || !card) return;
     container.scrollTo({
-      left: activities
-        ? card.offsetLeft - (container.firstElementChild as HTMLElement).offsetLeft
-        : card.offsetLeft - (container.clientWidth - card.offsetWidth) / 2,
+      left: card.offsetLeft - (container.firstElementChild as HTMLElement).offsetLeft,
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
         ? "auto"
         : "smooth",
@@ -84,12 +82,10 @@ export default function TripCarousel({
         onScroll={() => {
           const container = rail.current;
           if (!container) return;
-          const anchor = container.scrollLeft + (activities
-            ? (container.firstElementChild as HTMLElement).offsetLeft
-            : container.clientWidth / 2);
+          const anchor = container.scrollLeft + (container.firstElementChild as HTMLElement).offsetLeft;
           const distances = Array.from(container.children).map((e) => {
             const card = e as HTMLElement;
-            return Math.abs(card.offsetLeft + (activities ? 0 : card.offsetWidth / 2) - anchor);
+            return Math.abs(card.offsetLeft - anchor);
           });
           setActive(distances.indexOf(Math.min(...distances)));
         }}
