@@ -27,3 +27,8 @@
 :global([data-unlocking="true"]) .card::after { opacity: 0; }
 
 .card, .invitationSurface { box-shadow: 0 20px 40px -12px rgb(104 85 67 / 20%); }
+
+/* The mobile collage owns the stable outer frame and all entrance motion. */
+.stage.embedded { width: 100%; margin: 0; animation: none; }
+.embedded .card { transform: none; transition: none; }
+.embedded .card::after { display: none; }

@@ -1,8 +1,6 @@
-import FallingWeddingPhotos from "@/components/wedding_v1/FallingWeddingPhotos";
-import FloatingInvitation from "@/components/wedding_v1/FloatingInvitation";
+import EngagementHero from "@/components/wedding_v1/EngagementHero";
+import { engagementPhotos } from "@/data/engagement-photos";
 
 export default function WeddingHome() {
-  return <FallingWeddingPhotos>
-    <FloatingInvitation/>
-  </FallingWeddingPhotos>;
+  return <EngagementHero photos={engagementPhotos} />;
 }
