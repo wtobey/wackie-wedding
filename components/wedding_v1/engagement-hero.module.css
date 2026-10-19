@@ -139,6 +139,43 @@
   }
 
 }
+/* Mobile uses the same staged reveal, with covers spanning the narrow frame. */
+@media (max-width: 899px) {
+  .hero[data-reveal='unveil'] .frame { overflow: hidden; }
+  .hero[data-reveal='unveil'] .invitation {
+    z-index: 2;
+    transform-origin: center;
+    will-change: transform, opacity;
+    transition: opacity 600ms ease, transform 600ms ease;
+  }
+  .hero[data-reveal='unveil'] .frame[data-view='photos'] .invitation {
+    transform: scale(var(--invitation-expand, 1));
+    transition: transform 1400ms cubic-bezier(.4, 0, .2, 1), opacity 1500ms ease 1500ms;
+  }
+  .hero[data-reveal='unveil'] .collage { will-change: opacity; transition: opacity 600ms ease; }
+  .hero[data-reveal='unveil'] .frame[data-view='photos'] .collage { transition: opacity 1500ms ease 1500ms; }
+  .hero[data-reveal='unveil'] .frame::before,
+  .hero[data-reveal='unveil'] .frame::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background: var(--paper);
+    z-index: 1;
+    pointer-events: none;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    transition: transform 600ms ease;
+  }
+  .hero[data-reveal='unveil'] .frame::before { left: 0; }
+  .hero[data-reveal='unveil'] .frame::after { right: 0; }
+  .hero[data-reveal='unveil'] .frame[data-view='photos']::before,
+  .hero[data-reveal='unveil'] .frame[data-view='photos']::after { transition: transform 1800ms cubic-bezier(.4, 0, .2, 1) 1500ms; }
+  .hero[data-reveal='unveil'] .frame[data-view='photos']::before { transform: translate3d(-100%, 0, 0); }
+  .hero[data-reveal='unveil'] .frame[data-view='photos']::after { transform: translate3d(100%, 0, 0); }
+  .hero[data-reveal='unveil'] .details[data-revealed='true'] { transition: opacity 1500ms ease 1500ms, visibility 0s linear 1500ms; }
+}
 @media (prefers-reduced-motion: reduce) {
   .invitation, .collage { transition: none; }
   .hero[data-wide='true'][data-reveal='unveil'] .frame::before,
