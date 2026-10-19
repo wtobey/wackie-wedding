@@ -8,10 +8,10 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function EngagementReview({ searchParams }: { searchParams: Promise<{ layout?: string }> }) {
+export default async function EngagementReview({ searchParams }: { searchParams: Promise<{ layout?: string; edit?: string }> }) {
   if (process.env.NODE_ENV !== 'development') notFound();
-  const { layout } = await searchParams;
+  const { layout, edit } = await searchParams;
   return <WeddingShell>
-    <EngagementHero photos={engagementPhotos} layout={layout === 'paired' ? 'paired' : 'asymmetric'} reveal="unveil" />
+    <EngagementHero photos={engagementPhotos} layout={layout === 'paired' ? 'paired' : 'asymmetric'} reveal="unveil" editable={edit === 'mobile'} editTarget="mobile" />
   </WeddingShell>;
 }
