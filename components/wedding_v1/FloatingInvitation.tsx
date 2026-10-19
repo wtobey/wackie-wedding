@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import styles from "./floating-invitation.module.css";
 
-export default function FloatingInvitation() {
+export default function FloatingInvitation({ embedded = false }: { embedded?: boolean }) {
   const card = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (embedded) return;
     const element = card.current;
     if (!element) return;
     const motion = window.matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
@@ -59,10 +60,10 @@ export default function FloatingInvitation() {
       window.removeEventListener("blur", reset);
       motion.removeEventListener("change", reset);
     };
-  }, []);
+  }, [embedded]);
 
-  return <div className={styles.stage} data-photo-exclusion data-home-invitation>
-    <h1 id="welcome-title" className={styles.srOnly}>Jackie Tait &amp; Will Tobey are getting married</h1>
+  return <div className={`${styles.stage} ${embedded ? styles.embedded : ''}`} data-photo-exclusion data-home-invitation>
+    {!embedded && <h1 id="welcome-title" className={styles.srOnly}>Jackie Tait &amp; Will Tobey are getting married</h1>}
     <div className={styles.turn} data-invitation-turn>
     <div ref={card} className={styles.card}>
     <Link className={styles.invitationLink} href="/our-wedding" aria-label="View the wedding itinerary">
