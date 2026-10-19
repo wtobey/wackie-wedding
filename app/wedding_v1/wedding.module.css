@@ -934,3 +934,8 @@
 .site .gateCard .smallNote { font-size: 12px; line-height: 1.65; }
 .site .gate .gateDate { position: static; margin: 0; color: var(--orange); font-family: var(--font-main); font-size: clamp(14px, 2vw, 18px); letter-spacing: .02em; text-wrap: balance; }
 @media (max-width: 480px) { .site > .gate { padding-inline: 20px; gap: 28px; } .gate .gateCard { padding: 38px 28px; } }
+
+@media (max-width: 899px) {
+  .site > main:has([data-mobile-compact='true']) { flex: 0 0 auto; }
+  .site:has([data-mobile-compact='true']) > .footer { flex-grow: 1; }
+}

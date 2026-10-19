@@ -18,7 +18,7 @@
 .hero .details .eventLine { font: 700 clamp(14px, 3.8vw, 18px)/1.4 var(--font-main); color: var(--orange); margin: 0; text-align: center; text-transform: uppercase; }
 .controls { display: flex; justify-content: center; width: fit-content; gap: 6px; margin: 12px auto 0; padding: 0; text-align: center; }
 .controls[data-ready='false'] { visibility: hidden; }
-.controls button { min-height: 44px; padding: 10px 16px; border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); border-radius: 4px; background: var(--paper); color: var(--ink); font: 400 13px/1.4 "postea-greek-vf", sans-serif; text-transform: none; cursor: pointer; transition: background-color 180ms ease, border-color 180ms ease; }
+.controls button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-height: 44px; padding: 10px; border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); border-radius: 4px; background: var(--paper); color: var(--ink); font: 400 13px/1.4 "postea-greek-vf", sans-serif; text-transform: none; cursor: pointer; transition: background-color 180ms ease, border-color 180ms ease; }
 .controls button[aria-pressed='true'] { background: var(--gold, #F1C166); border-color: var(--gold, #F1C166); }
 @media (hover: hover) { .controls button:not([aria-pressed='true']):hover { background: color-mix(in srgb, var(--gold, #F1C166) 20%, var(--paper)); border-color: var(--gold, #F1C166); } }
 .controls button:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
@@ -89,7 +89,7 @@
     margin: 0;
     gap: 6px;
   }
-  .hero[data-wide='true'] .controls button { min-height: 36px; padding: 7px 12px; }
+  .hero[data-wide='true'] .controls button { padding: 10px; }
 
   .hero[data-reveal='recede'] .invitation { transition: opacity 1600ms ease, transform 1600ms ease; }
   .hero[data-reveal='recede'] .frame[data-view='photos'] .invitation { transform: scale(.88); }
@@ -139,42 +139,38 @@
   }
 
 }
-/* Mobile uses the same staged reveal, with covers spanning the narrow frame. */
+/* On mobile the card fills the width, then slips under the header divider. */
+@keyframes mobileCardExit {
+  0%, 44.444% { transform: translate3d(0, 0, 0); opacity: 1; }
+  100% { transform: translate3d(0, -100%, 0); opacity: 1; }
+}
 @media (max-width: 899px) {
   .hero[data-reveal='unveil'] .frame { overflow: hidden; }
   .hero[data-reveal='unveil'] .invitation {
     z-index: 2;
+    will-change: transform;
+    transition: opacity 400ms ease;
+  }
+  .hero[data-reveal='unveil'] .invitation > div {
+    width: 84%;
+    margin: 0 auto;
     transform-origin: center;
-    will-change: transform, opacity;
-    transition: opacity 600ms ease, transform 600ms ease;
+    transition: transform 400ms ease;
   }
   .hero[data-reveal='unveil'] .frame[data-view='photos'] .invitation {
-    transform: scale(var(--invitation-expand, 1));
-    transition: transform 1400ms cubic-bezier(.4, 0, .2, 1), opacity 1500ms ease 1500ms;
+    animation: mobileCardExit 2700ms cubic-bezier(.4, 0, .2, 1) both;
   }
-  .hero[data-reveal='unveil'] .collage { will-change: opacity; transition: opacity 600ms ease; }
-  .hero[data-reveal='unveil'] .frame[data-view='photos'] .collage { transition: opacity 1500ms ease 1500ms; }
-  .hero[data-reveal='unveil'] .frame::before,
-  .hero[data-reveal='unveil'] .frame::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 50%;
-    background: var(--paper);
-    z-index: 1;
-    pointer-events: none;
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
-    transition: transform 600ms ease;
+  .hero[data-reveal='unveil'] .frame[data-view='photos'] .invitation > div {
+    transform: scale(1.1904761905);
+    transition: transform 1200ms cubic-bezier(.4, 0, .2, 1);
   }
-  .hero[data-reveal='unveil'] .frame::before { left: 0; }
-  .hero[data-reveal='unveil'] .frame::after { right: 0; }
-  .hero[data-reveal='unveil'] .frame[data-view='photos']::before,
-  .hero[data-reveal='unveil'] .frame[data-view='photos']::after { transition: transform 1800ms cubic-bezier(.4, 0, .2, 1) 1500ms; }
-  .hero[data-reveal='unveil'] .frame[data-view='photos']::before { transform: translate3d(-100%, 0, 0); }
-  .hero[data-reveal='unveil'] .frame[data-view='photos']::after { transform: translate3d(100%, 0, 0); }
-  .hero[data-reveal='unveil'] .details[data-revealed='true'] { transition: opacity 1500ms ease 1500ms, visibility 0s linear 1500ms; }
+  .hero[data-reveal='unveil'] .collage { will-change: opacity; transition: opacity 400ms ease; }
+  .hero[data-reveal='unveil'] .frame[data-view='photos'] .collage { transition: opacity 1500ms ease 1200ms; }
+  .hero[data-reveal='unveil'] .details[data-revealed='true'] { transition: opacity 1500ms ease 1200ms, visibility 0s linear 1200ms; }
+}
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  .hero[data-reveal='unveil'] .frame[data-view='photos'] .invitation { animation: none; }
+  .hero[data-reveal='unveil'] .invitation > div { transition: none !important; transform: none !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   .invitation, .collage { transition: none; }
@@ -242,4 +238,47 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .hero .details[data-revealed] { transition: none; }
+}
+
+.mobileLocation { display: inline; }
+.desktopLocation { display: none; }
+@media (min-width: 900px) {
+  .mobileLocation { display: none; }
+  .desktopLocation { display: inline; }
+}
+
+@media (max-width: 899px) {
+  .hero.hero[data-mobile-compact='true'] {
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 28px;
+  }
+  .hero[data-mobile-compact='true'] .frame {
+    width: 100%;
+  }
+  .hero[data-mobile-compact='true'] .details {
+    box-sizing: border-box;
+    padding-inline: 12px;
+  }
+  .hero[data-mobile-compact='true'] .editor {
+    order: 1;
+  }
+}
+
+.editor[data-target='mobile'] { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 8px 0 12px; font: 12px/1.4 "postea-greek-vf", sans-serif; }
+.editor[data-target='mobile'] button { padding: 8px 12px; min-height: 40px; border: 1px solid var(--orange); border-radius: 4px; background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
+.editor[data-target='mobile'] button:disabled { opacity: .45; cursor: default; }
+.photo[data-layout='mobile'] .frameLabel { left: 3px; bottom: 3px; padding: 3px 5px; font-size: 10px; }
+
+.featureGroupReversed { grid-template-columns: minmax(0, 1fr) calc((100% - 4px) * 17 / 35 + 4px * 3 / 35); }
+
+.controls button svg { opacity: .65; flex-shrink: 0; }
+
+@media (max-width: 899px) {
+  .hero.hero[data-mobile-compact='true'] { padding-bottom: 6px; }
+  .hero[data-mobile-compact='true'] .details { margin-top: 8px; }
+  .hero .controls { margin-top: 4px; gap: 8px; }
+  .hero .details .eventLine { box-sizing: border-box; padding: 4px 2px; font-size: clamp(15px, 4.35vw, 19px); line-height: 1.4; }
+  .hero .controls button { width: 30px; height: 20px; min-height: 20px; padding: 2px 7px; border-radius: 3px; }
+  .hero .controls button svg { width: 14px; height: 14px; }
 }

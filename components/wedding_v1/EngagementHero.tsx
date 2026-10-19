@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import savedDesktopLayout from '@/data/engagement-desktop-layout.json';
+import savedMobileLayout from '@/data/engagement-mobile-layout.json';
 import { desktopAdditionalPhotos, type EngagementPhoto } from '@/data/engagement-photos';
 import { cropStyle } from '@/lib/wedding-admin/crop';
 import FloatingInvitation from './FloatingInvitation';
@@ -11,18 +12,21 @@ import styles from './engagement-hero.module.css';
 
 const photoRatio = (photo: EngagementPhoto) => photo.orientation === 'portrait' ? 2 / 3 : 3 / 2;
 
-function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil', editable = false }: { editable?: boolean; photos: EngagementPhoto[]; layout?: 'paired' | 'asymmetric'; reveal?: 'dissolve' | 'recede' | 'unveil' }) {
+function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil', editable = false, editTarget = 'desktop' }: { editTarget?: 'desktop' | 'mobile'; editable?: boolean; photos: EngagementPhoto[]; layout?: 'paired' | 'asymmetric'; reveal?: 'dissolve' | 'recede' | 'unveil' }) {
   const [desktopLayout, setDesktopLayout] = useState(savedDesktopLayout);
-  const [baseline, setBaseline] = useState(savedDesktopLayout);
+  const [mobileLayout, setMobileLayout] = useState(savedMobileLayout);
+  const editLayout = editTarget === 'mobile' ? mobileLayout : desktopLayout;
+  const setEditLayout = editTarget === 'mobile' ? setMobileLayout : setDesktopLayout;
+  const [baseline, setBaseline] = useState(editTarget === 'mobile' ? savedMobileLayout : savedDesktopLayout);
   const [editing, setEditing] = useState(false);
   const [picked, setPicked] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
   const dragging = useRef<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState('');
-  const dirty = desktopLayout.some((value, index) => value !== baseline[index]);
+  const dirty = editLayout.some((value, index) => value !== baseline[index]);
   function swap(from: number, to: number) {
-    setDesktopLayout(current => {
+    setEditLayout(current => {
       const next = [...current];
       [next[from], next[to]] = [next[to], next[from]];
       return next;
@@ -36,10 +40,10 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
     try {
       const response = await fetch('/api/wedding/preview-layout', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(desktopLayout),
+        body: JSON.stringify({ target: editTarget, layout: editLayout }),
       });
       if (!response.ok) throw new Error('Save failed');
-      setBaseline([...desktopLayout]);
+      setBaseline([...editLayout]);
       setEditing(false);
       setPicked(null);
       setStatus('Layout saved to the homepage.');
@@ -50,7 +54,7 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
   const lightbox = useRef<HTMLDialogElement>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<EngagementPhoto | null>(null);
   const chosen = useRef(false);
-  const loaded = useRef(new Set<number>());
+  const loaded = useRef(new Set<string>());
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [replay, setReplay] = useState(0);
@@ -61,6 +65,12 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
   const landscapes = photos.filter(photo => photo.orientation === 'landscape');
   const hasCollection = photos.length >= 5 && photos.length <= 10 && landscapes.length >= 1 && landscapes.length <= 3;
   const wideCollage = portraits.length === 6 && landscapes.length === 2;
+  const mobileAdditions: EngagementPhoto[] = wideCollage ? desktopLayout.flatMap((src, slot) => {
+    if (photos.some(photo => photo.src === src)) return [];
+    const photo = desktopPhotos.find(photo => photo.src === src);
+    return photo ? [{ ...photo, orientation: [0, 7, 8].includes(slot) ? 'landscape' as const : 'portrait' as const }] : [];
+  }) : [];
+  const extendedMobile = layout === 'asymmetric' && wideCollage && mobileAdditions.length === 5;
   // Two larger portraits anchor the mosaic. Mix the remaining orientations
   // into justified rows: ratio-weighted columns give equal heights without
   // stretching photographs or leaving holes between them.
@@ -131,12 +141,12 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
     return () => { clearTimeout(timer); observer.disconnect(); motion.removeEventListener('change', schedule); };
   }, [available, replay]);
 
-  async function photoLoaded(image: HTMLImageElement, index: number) {
+  async function photoLoaded(image: HTMLImageElement, key: string) {
     try {
       await image.decode();
       if (!image.isConnected) return;
-      loaded.current.add(index);
-      if (loaded.current.size === photos.length + (wideCollage ? desktopLayout.length : 0)) setReady(true);
+      loaded.current.add(key);
+      if (loaded.current.size === (extendedMobile ? mobileLayout.length : photos.length + mobileAdditions.length) + (wideCollage ? desktopLayout.length : 0)) setReady(true);
     } catch { setFailed(true); }
   }
 
@@ -156,7 +166,7 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
         sizes={desktop ? `${Math.ceil(widthFraction * 100)}vw` : `(max-width: 552px) ${Math.ceil(widthFraction * 100)}vw, ${Math.ceil(widthFraction * 520)}px`}
         unoptimized={photo.src.startsWith('/api/') || photo.src.includes('/storage/v1/object/sign/')}
         style={cropStyle(photo.crop)}
-        onLoad={event => { void photoLoaded(event.currentTarget, photos.indexOf(photo) + (desktop ? photos.length : 0)); }} onError={() => setFailed(true)} />
+        onLoad={event => { void photoLoaded(event.currentTarget, `${desktop ? 'desktop' : 'mobile'}:${photo.src}`); }} onError={() => setFailed(true)} />
     </button>;
   }
 
@@ -170,15 +180,17 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
 
   const asymmetric = layout === 'asymmetric' && portraits.length === 6 && landscapes.length === 2;
 
-  function desktopSlot(index: number, orientation: 'portrait' | 'landscape', width: number) {
-    const photo = desktopPhotos.find(item => item.src === desktopLayout[index]);
-    const label = photo?.alt ?? `Empty photo space ${desktopLayout[index].replace('placeholder-', '')}`;
-    return <button type="button" key={index} data-slot={index} data-photo={desktopLayout[index]}
+  function desktopSlot(index: number, orientation: 'portrait' | 'landscape', width: number, target: 'desktop' | 'mobile' = 'desktop') {
+    const slotLayout = target === 'mobile' ? mobileLayout : desktopLayout;
+    const slotEditing = editing && editTarget === target;
+    const photo = desktopPhotos.find(item => item.src === slotLayout[index]);
+    const label = photo?.alt ?? `Empty photo space ${slotLayout[index].replace('placeholder-', '')}`;
+    return <button type="button" key={index} data-slot={index} data-layout={target} data-photo={slotLayout[index]}
       className={`${styles.photo} ${!photo ? styles.placeholder : ''}`}
-      data-orientation={orientation} data-editing={editing} data-selected={picked === index} data-over={over === index}
-      disabled={saving || (!editing && !photo)} draggable={editing && !saving}
-      aria-label={editing ? `Frame ${index + 1}: ${label}. Select to swap` : `Enlarge photo: ${label}`}
-      aria-pressed={editing ? picked === index : undefined} aria-haspopup={!editing && photo ? 'dialog' : undefined}
+      data-orientation={orientation} data-editing={slotEditing} data-selected={picked === index} data-over={over === index}
+      disabled={saving || (!slotEditing && !photo)} draggable={slotEditing && !saving}
+      aria-label={slotEditing ? `Frame ${index + 1}: ${label}. Select to swap` : `Enlarge photo: ${label}`}
+      aria-pressed={slotEditing ? picked === index : undefined} aria-haspopup={!slotEditing && photo ? 'dialog' : undefined}
       onDragStart={event => {
         dragging.current = index;
         setPicked(index);
@@ -186,7 +198,7 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
         event.dataTransfer.setData('text/plain', String(index));
       }}
       onDragOver={event => {
-        if (!editing || saving || dragging.current === null) return;
+        if (!slotEditing || saving || dragging.current === null) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
         setOver(index);
@@ -194,35 +206,35 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
       onDragLeave={() => setOver(current => current === index ? null : current)}
       onDrop={event => {
         event.preventDefault();
-        if (editing && !saving && dragging.current !== null) swap(dragging.current, index);
+        if (slotEditing && !saving && dragging.current !== null) swap(dragging.current, index);
         dragging.current = null;
       }}
       onDragEnd={() => { dragging.current = null; setPicked(null); setOver(null); }}
       onKeyDown={event => { if (event.key === 'Escape') setPicked(null); }}
       onClick={() => {
-        if (editing) {
+        if (slotEditing) {
           if (picked === null) { setPicked(index); setStatus('Choose another frame to swap with this one.'); }
           else swap(picked, index);
         } else if (photo) { setSelectedPhoto(photo); lightbox.current?.showModal(); }
       }}>
       {photo ? <Image src={photo.src} alt={photo.alt} fill loading="eager" draggable={false}
         sizes={`${Math.ceil(width * 100)}vw`} style={cropStyle(photo.crop)}
-        onLoad={event => { void photoLoaded(event.currentTarget, desktopPhotos.indexOf(photo) + photos.length); }}
+        onLoad={event => { void photoLoaded(event.currentTarget, `${target}:${photo.src}`); }}
         onError={() => setFailed(true)} /> :
-        <span>Photo {desktopLayout[index].replace('placeholder-', '')}<small>{orientation === 'portrait' ? 'Portrait · 2:3' : 'Horizontal · 3:2'}</small></span>}
-      {editing && <span className={styles.frameLabel}>{index + 1} · {picked === index ? 'Selected' : 'Drag to swap'}</span>}
+        <span>Photo {slotLayout[index].replace('placeholder-', '')}<small>{orientation === 'portrait' ? 'Portrait · 2:3' : 'Horizontal · 3:2'}</small></span>}
+      {slotEditing && <span className={styles.frameLabel}>{index + 1} · {picked === index ? 'Selected' : 'Drag to swap'}</span>}
     </button>;
   }
 
-  return <section className={`${siteStyles.hero} ${styles.hero}`} data-wide={wideCollage} data-reveal={reveal} aria-labelledby="welcome-title">
-    {editable && wideCollage && <div className={styles.editor}>
+  return <section className={`${siteStyles.hero} ${styles.hero}`} data-wide={wideCollage} data-mobile-compact={extendedMobile} data-reveal={reveal} aria-labelledby="welcome-title">
+    {editable && wideCollage && <div className={styles.editor} data-target={editTarget}>
       {!editing ? <>
         <button type="button" disabled={!available} onClick={() => { setEditing(true); select('photos'); setStatus(''); }}>Edit layout</button>
         <button type="button" disabled={!available} onClick={() => { chosen.current = false; setView('invitation'); setBandRevealed(false); setReplay(value => value + 1); }}>Replay reveal</button>
       </> : <>
         <span>Drag a photo onto another frame to swap. You can also click two frames.</span>
         <button type="button" disabled={saving || !dirty} onClick={() => void saveLayout()}>{saving ? 'Saving…' : 'Save layout'}</button>
-        <button type="button" disabled={saving} onClick={() => { setDesktopLayout([...baseline]); setEditing(false); setPicked(null); setStatus(''); }}>Cancel</button>
+        <button type="button" disabled={saving} onClick={() => { setEditLayout([...baseline]); setEditing(false); setPicked(null); setStatus(''); }}>Cancel</button>
       </>}
       <span role="status" aria-live="polite">{status}</span>
     </div>}
@@ -233,16 +245,43 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
       </div>
       {hasCollection && <div id="engagement-collage" className={styles.collage} aria-label="Engagement photos" aria-hidden={!showPhotos} inert={!showPhotos}>
         <div className={styles.mobileMosaic}>
-        {asymmetric ? <>
+        {extendedMobile ? <>
           <div className={styles.featureGroup}>
-            {renderPhoto(portraits[0], .49)}
+            {desktopSlot(0, 'portrait', .49, 'mobile')}
             <div className={styles.featureSide}>
-              {renderPhoto(landscapes[0], .52)}
-              {renderRow([portraits[1], portraits[2]], 'supporting', .52)}
+              {desktopSlot(1, 'landscape', .52, 'mobile')}
+              <div className={styles.photoRow} style={{ gridTemplateColumns: '1fr 1fr' }}>
+                {desktopSlot(2, 'portrait', .26, 'mobile')}
+                {desktopSlot(3, 'portrait', .26, 'mobile')}
+              </div>
             </div>
           </div>
-          {renderRow([portraits[3], landscapes[1], portraits[4], portraits[5]], 'strip')}
-        </> : rows.map((row, rowIndex) => renderRow(row, rowIndex))}
+          <div className={`${styles.featureGroup} ${styles.featureGroupReversed}`}>
+            <div className={styles.featureSide}>
+              <div className={styles.photoRow} style={{ gridTemplateColumns: '1fr 1fr' }}>
+                {desktopSlot(4, 'portrait', .26, 'mobile')}
+                {desktopSlot(6, 'portrait', .26, 'mobile')}
+              </div>
+              {desktopSlot(7, 'landscape', .52, 'mobile')}
+            </div>
+            {desktopSlot(5, 'portrait', .49, 'mobile')}
+          </div>
+        </> : <>
+          {asymmetric ? <>
+            <div className={styles.featureGroup}>
+              {renderPhoto(portraits[0], .49)}
+              <div className={styles.featureSide}>
+                {renderPhoto(landscapes[0], .52)}
+                {renderRow([portraits[1], portraits[2]], 'supporting', .52)}
+              </div>
+            </div>
+            {renderRow([portraits[3], landscapes[1], portraits[4], portraits[5]], 'strip')}
+          </> : rows.map((row, rowIndex) => renderRow(row, rowIndex))}
+          {mobileAdditions.length > 0 && <>
+            {renderRow(mobileAdditions.slice(0, 3), 'additional-portraits')}
+            {mobileAdditions.length > 3 && renderRow(mobileAdditions.slice(3), 'additional-closing')}
+          </>}
+        </>}
         </div>
         {wideCollage && <div className={styles.desktopMosaic}>
           <div className={styles.desktopOpening}>
@@ -272,10 +311,20 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
       </div>}
     </div>
     <div className={styles.details} data-revealed={bandRevealed || failed || !hasCollection}>
-      <h1 id="welcome-title" className={styles.eventLine}>June 5, 2027 | Sonoma County, California</h1>
+      <h1 id="welcome-title" className={styles.eventLine}>June 5, 2027 | Sonoma County, <span className={styles.desktopLocation}>California</span><span className={styles.mobileLocation}>CA</span></h1>
       {hasCollection && <div className={styles.controls} data-ready={available} role="group" aria-label="Choose welcome image">
-        <button type="button" disabled={!available} aria-pressed={showPhotos} aria-controls="engagement-collage" onClick={() => select('photos')}>Photos</button>
-        <button type="button" disabled={!available || editing} aria-pressed={!showPhotos} aria-controls="engagement-invitation" onClick={() => select('invitation')}>Save the Date</button>
+        <button type="button" disabled={!available} aria-pressed={showPhotos} aria-label="Photos" title="Photos" aria-controls="engagement-collage" onClick={() => select('photos')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+            <path d="M8 6 9.5 3.5h5L16 6h4a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        </button>
+        <button type="button" disabled={!available || editing} aria-pressed={!showPhotos} aria-label="Save the Date" title="Save the Date" aria-controls="engagement-invitation" onClick={() => select('invitation')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m3 7 9 6 9-6" />
+          </svg>
+        </button>
       </div>}
     </div>
     <dialog ref={lightbox} className={styles.lightbox} aria-label="Enlarged engagement photo"
@@ -294,5 +343,5 @@ function EngagementHeroContent({ photos, layout = 'asymmetric', reveal = 'unveil
 // A saved layout change must also reset the editor draft and image-load state.
 // Otherwise Fast Refresh can retain references to photos removed by a revert.
 export default function EngagementHero(props: Parameters<typeof EngagementHeroContent>[0]) {
-  return <EngagementHeroContent key={savedDesktopLayout.join('|')} {...props} />;
+  return <EngagementHeroContent key={[...savedDesktopLayout, ...savedMobileLayout].join('|')} {...props} />;
 }
